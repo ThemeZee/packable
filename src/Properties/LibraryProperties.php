@@ -127,7 +127,7 @@ class LibraryProperties extends BaseProperties
         $composerName = (string) ($composerJsonData['name'] ?? '');
         $packageNamePieces = explode('/', $composerName, 2);
         $basename = implode('-', $packageNamePieces);
-        // From "syde/foo-bar-baz" to  "Syde Foo Bar Baz"
+        // From "themezee/foo-bar-baz" to  "Themezee Foo Bar Baz"
         $name = mb_convert_case(
             str_replace(['-', '_', '.'], ' ', implode(' ', $packageNamePieces)),
             MB_CASE_TITLE,
