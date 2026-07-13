@@ -100,8 +100,8 @@ class LibraryPropertiesTest extends TestCase
     {
         $expectedBaseName = "properties-test";
         $expectedDescription = 'the description';
-        $expectedAuthor = 'Syde GmbH';
-        $expectedAuthorUri = 'https://syde.com/';
+        $expectedAuthor = 'ThemeZee';
+        $expectedAuthorUri = 'https://themezee.com/';
         $expectedDomainPath = 'languages/';
         $expectedName = "Properties Test";
         $expectedTextDomain = 'properties-test';

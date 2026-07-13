@@ -1,16 +1,8 @@
 {
     "name": "themezee/packable",
     "type": "library",
-    "description": "Modular PSR-11 implementation for WordPress plugins, themes or libraries.",
+    "description": "Modular PSR-11 implementation for WordPress themes and plugins.",
     "license": "GPL-2.0-or-later",
-    "authors": [
-        {
-            "name": "Syde GmbH",
-            "email": "hello@syde.com",
-            "homepage": "https://syde.com/",
-            "role": "Company"
-        }
-    ],
     "repositories": [
         {
             "type": "composer",

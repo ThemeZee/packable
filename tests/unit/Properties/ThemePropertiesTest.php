@@ -17,8 +17,8 @@ class ThemePropertiesTest extends TestCase
     public function testBasic(): void
     {
         $expectedDescription = 'the description';
-        $expectedAuthor = 'Syde GmbH';
-        $expectedAuthorUri = 'https://syde.com/';
+        $expectedAuthor = 'ThemeZee';
+        $expectedAuthorUri = 'https://themezee.com/';
         $expectedDomainPath = 'languages/';
         $expectedName = "Properties Test";
         $expectedTextDomain = 'properties-test';
