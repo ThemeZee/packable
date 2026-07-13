@@ -7,7 +7,7 @@ Those Modules can be registered to your Application via the provided `ServiceMod
 
 ```php
 <?php
-Inpsyde\Modularity\Package::new($properties)
+ThemeZee\Packable\Package::new($properties)
     ->addModule(new ModuleWhichProvidesServices())
     ->addModule(new ModuleWhichProvidesFactories())
     ->addModule(new ModuleWhichProviedsExtensions())
@@ -15,7 +15,7 @@ Inpsyde\Modularity\Package::new($properties)
     ->boot();
 ```
 
-Each Module implementation will extend the basic `Module`-interface which is required to define a `Module::id(): string`. This identifier will be re-used in Package-class to keep track of the current state of your Module and will allow easier debugging of your Application. To avoid defining this by hand, it is possible to use the following Trait: `Inpsyde\Modularity\Module\ModuleClassNameIdTrait`
+Each Module implementation will extend the basic `Module`-interface which is required to define a `Module::id(): string`. This identifier will be re-used in Package-class to keep track of the current state of your Module and will allow easier debugging of your Application. To avoid defining this by hand, it is possible to use the following Trait: `ThemeZee\Packable\Module\ModuleClassNameIdTrait`
 
 ## ServiceModule
 A ServiceModule will allow you to register new Services to the Container, to access them later on a specific point. The `ServiceModule::services(): array` will return an array of Services. Each array-key is an identifier for your Service, while the array-value will contain a callable which receives the primary Container (read-only) to set up your Service.
@@ -27,8 +27,8 @@ Services registered via `ServiceModule::services()` will only be resolved and ex
 
 declare(strict_types=1);
 
-use Inpsyde\Modularity\Module\ServiceModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use ThemeZee\Packable\Module\ServiceModule;
+use ThemeZee\Packable\Module\ModuleClassNameIdTrait;
 use Psr\Container\ContainerInterface;
 
 class ModuleWhichProvidesServices implements ServiceModule
@@ -54,8 +54,8 @@ The `FactoryModule::factories(): array` will allow you to register new Services 
 
 declare(strict_types=1);
 
-use Inpsyde\Modularity\Module\FactoryModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use ThemeZee\Packable\Module\FactoryModule;
+use ThemeZee\Packable\Module\ModuleClassNameIdTrait;
 use Psr\Container\ContainerInterface;
 
 class ModuleWhichProvidesFactories implements FactoryModule
@@ -81,8 +81,8 @@ The `ExtendingModule::extensions(): array` will allow you to return an array of 
 
 declare(strict_types=1);
 
-use Inpsyde\Modularity\Module\ExtendingModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use ThemeZee\Packable\Module\ExtendingModule;
+use ThemeZee\Packable\Module\ModuleClassNameIdTrait;
 use Psr\Container\ContainerInterface;
 
 class ModuleWhichProvidesExtensions implements ExtendingModule
@@ -106,7 +106,7 @@ class ModuleWhichProvidesExtensions implements ExtendingModule
 Sometimes it is desirable to extend a service by its type. Extending modules can do that as well:
 
 ```php
-use Inpsyde\Modularity\Module\ExtendingModule;
+use ThemeZee\Packable\Module\ExtendingModule;
 use Psr\Log\{LoggerInterface, LoggerAwareInterface};
 
 class LoggerAwareExtensionModule implements ExtendingModule
@@ -178,11 +178,11 @@ first processed.
 
 The syntax `"@instanceof<T>"` is an hardcoded string that might be error prone to type.
 
-The method `use Inpsyde\Modularity\Container\ServiceExtensions::typeId()` might be used to avoid 
+The method `use ThemeZee\Packable\Container\ServiceExtensions::typeId()` might be used to avoid 
 using hardcode strings. For example:
 
 ```php
-use npsyde\Modularity\Container\ServiceExtensions;
+use ThemeZee\Packable\Container\ServiceExtensions;
 
 class AnimalsExtensionModule implements ExtendingModule
 {
@@ -228,8 +228,8 @@ If there is functionality that needs to be executed, you can make the Module exe
 
 declare(strict_types=1);
 
-use Inpsyde\Modularity\Module\ExecutableModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use ThemeZee\Packable\Module\ExecutableModule;
+use ThemeZee\Packable\Module\ModuleClassNameIdTrait;
 use Psr\Container\ContainerInterface;
 
 class ModuleWhichIsExecuted implements ExecutableModule
@@ -256,10 +256,10 @@ To execute Services based on a Context like “Rest Request” or “FrontOffice
 
 declare(strict_types=1);
 
-use Inpsyde\Modularity\Module\ExecutableModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use ThemeZee\Packable\Module\ExecutableModule;
+use ThemeZee\Packable\Module\ModuleClassNameIdTrait;
 use Psr\Container\ContainerInterface;
-use Inpsyde\WpContext;
+use ThemeZee\WpContext;
 
 class ModuleFour implements ExecutableModule
 {
@@ -289,8 +289,8 @@ When the same Service id is registered more than once by multiple modules, the l
 
 declare(strict_types=1);
 
-use Inpsyde\Modularity\Module\ServiceModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use ThemeZee\Packable\Module\ServiceModule;
+use ThemeZee\Packable\Module\ModuleClassNameIdTrait;
 use Psr\Container\ContainerInterface;
 
 class ModuleWhichProvidesServices implements ServiceModule

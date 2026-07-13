@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity\Properties;
+namespace ThemeZee\Packable\Properties;
 
 class BaseProperties implements Properties
 {

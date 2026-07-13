@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity\Tests\Unit\Container;
+namespace ThemeZee\Packable\Tests\Unit\Container;
 
 use Brain\Monkey;
-use Inpsyde\Modularity\Container\PackageProxyContainer;
-use Inpsyde\Modularity\Package;
-use Inpsyde\Modularity\Tests\TestCase;
+use ThemeZee\Packable\Container\PackageProxyContainer;
+use ThemeZee\Packable\Package;
+use ThemeZee\Packable\Tests\TestCase;
 
 class PackageProxyContainerTest extends TestCase
 {

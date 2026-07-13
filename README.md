@@ -1,34 +1,18 @@
-# Inpsyde Modularity
+# ThemeZee Packable
 
-[![Version](https://img.shields.io/packagist/v/inpsyde/modularity.svg)](https://packagist.org/packages/inpsyde/modularity)
-[![Status](https://img.shields.io/badge/status-active-brightgreen.svg)](https://github.com/inpsyde/modularity)
-[![codecov](https://codecov.io/gh/inpsyde/modularity/branch/master/graph/badge.svg)](https://codecov.io/gh/inpsyde/modularity)
-[![Downloads](https://img.shields.io/packagist/dt/inpsyde/modularity.svg)](https://packagist.org/packages/inpsyde/modularity)
-[![License](https://img.shields.io/packagist/l/inpsyde/modularity.svg)](https://packagist.org/packages/inpsyde/modularity)
+[![Version](https://img.shields.io/packagist/v/themezee/packable.svg)](https://packagist.org/packages/themezee/packable)
+[![Status](https://img.shields.io/badge/status-active-brightgreen.svg)](https://github.com/themezee/packable)
+[![License](https://img.shields.io/packagist/l/themezee/packable.svg)](https://packagist.org/packages/themezee/packable)
 
 ## Introduction
 
-inpsyde/modularity is a modular [PSR-11](https://github.com/php-fig/container) implementation for WordPress Plugins,
-Themes or Libraries.
+themezee/packable is a modular [PSR-11](https://github.com/php-fig/container) implementation for WordPress themes and plugins.
 
 ## Installation
 
 ```shell
-composer require inpsyde/modularity
+composer require themezee/packable
 ```
-
-## Minimum Requirements and Dependencies
-
-* PHP 7.4+
-
-When installed for development via Composer, the package also requires:
-
-* inpsyde/php-coding-standards
-* roots/wordpress
-* phpstan/phpstan
-* phpunit/phpunit
-* brain/monkey
-* mikey179/vfsstream
 
 ## Documentation
 
@@ -40,5 +24,6 @@ When installed for development via Composer, the package also requires:
 
 ## Copyright and License
 
-This package is [free software](https://www.gnu.org/philosophy/free-sw.en.html) distributed under the terms of the GNU General Public License version 2 or (at your option) any later version. For the full license, see [LICENSE](./LICENSE).
+This package was initially forked from [Modularity](https://github.com/inpsyde/modularity). 
 
+This package is [free software](https://www.gnu.org/philosophy/free-sw.en.html) distributed under the terms of the GNU General Public License version 2 or (at your option) any later version. For the full license, see [LICENSE](./LICENSE).

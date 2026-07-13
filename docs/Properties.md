@@ -10,10 +10,10 @@ To access Properties in your application via Container you can use the class con
 
 declare(strict_types=1);
 
-use Inpsyde\Modularity\Package;
-use Inpsyde\Modularity\Properties\Properties;
-use Inpsyde\Modularity\Module\ExecutableModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use ThemeZee\Packable\Package;
+use ThemeZee\Packable\Properties\Properties;
+use ThemeZee\Packable\Module\ExecutableModule;
+use ThemeZee\Packable\Module\ModuleClassNameIdTrait;
 use Psr\Container\ContainerInterface;
 
 class ModuleThree implements ExecutableModule
@@ -37,12 +37,12 @@ A specific instance of your Properties will use the following data:
 | Properties::author() | Author | Author | authors[0].name |
 | Properties::authorUri() | Author URI | Author URI | authors[0].homepage |
 | Properties::description() | Description | Description | description |
-| Properties::domainPath() | Domain Path | Domain Path | extra.modularity.domainPath |
-| Properties::name() | Theme Name | Plugin Name | extra.modularity.name |
-| Properties::textDomain() | Text Domain | Text Domain | extra.modularity.textDomain |
-| Properties::uri() | Theme URI | Plugin URI | extra.modularity.uri |
-| Properties::version() | Version | Version | version<br>extra.modularity.version |
-| Properties::requiresWp() | Requires at least | Requires at least | extra.modularity.requiresWp |
+| Properties::domainPath() | Domain Path | Domain Path | extra.packable.domainPath |
+| Properties::name() | Theme Name | Plugin Name | extra.packable.name |
+| Properties::textDomain() | Text Domain | Text Domain | extra.packable.textDomain |
+| Properties::uri() | Theme URI | Plugin URI | extra.packable.uri |
+| Properties::version() | Version | Version | version<br>extra.packable.version |
+| Properties::requiresWp() | Requires at least | Requires at least | extra.packable.requiresWp |
 | Properties::requiresPhp() | Requires PHP | Requires PHP | require.php<br>require-dev.php |
 | Properties::baseUrl() | WP_Theme::get_stylesheet_directory_uri() | plugins_url() |  |
 | Properties::network() |  | Network |  |
@@ -64,7 +64,7 @@ Inside your Plugin you can use the following code to automatically generate Prop
 
 ```php
 <?php
-use Inpsyde\Modularity\Properties;
+use ThemeZee\Packable\Properties;
 
 $properties = Properties\PluginProperties::new('/path/to/plugin-main-file.php');
 ```
@@ -86,7 +86,7 @@ To generate Properties for your Theme you need to provide the Theme directory or
 
 ```php
 <?php
-use Inpsyde\Modularity\Properties;
+use ThemeZee\Packable\Properties;
 
 $properties = Properties\ThemeProperties::new('/path/to/theme/directory/');
 ```
@@ -107,7 +107,7 @@ Additionally, ThemeProperties will have the following public API:
 For libraries, you can use the LibraryProperties which give you context based on your composer.json. You can bootstrap your standalone-library like following:
 
 ```php
-use Inpsyde\Modularity\Properties;
+use ThemeZee\Packable\Properties;
 
 $properties = Properties\LibraryProperties::new('path/to/composer.json');
 ```
@@ -121,7 +121,7 @@ is possible to include it when creating the instance:
 
 ```php
 $url = 'https://example.com/wp-content/vendor/my/library';
-$properties = Inpsyde\Modularity\Properties\LibraryProperties::new('path/to/composer.json', $url);
+$properties = ThemeZee\Packable\Properties\LibraryProperties::new('path/to/composer.json', $url);
 ```
 
 Alternatively, is the URL is known at a later time, when an instance of `LibraryProperties` is
@@ -129,7 +129,7 @@ already present, it is possible to use the `withBaseUrl()` method:
 
 ```php
 $url = 'https://example.com/wp-content/vendor/my/library';
-/** @var Inpsyde\Modularity\Properties\LibraryProperties $properties */
+/** @var ThemeZee\Packable\Properties\LibraryProperties $properties */
 $properties->withBaseUrl($url);
 ```
 

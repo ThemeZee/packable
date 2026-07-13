@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity\Module;
+namespace ThemeZee\Packable\Module;
 
 /**
- * @package Inpsyde\Modularity\Module
+ * @package ThemeZee\Packable\Module
  */
 interface Module
 {

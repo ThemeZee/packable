@@ -1,6 +1,6 @@
 # The application flow
 
-Modularity implements its application flow in two phases:
+Packable implements its application flow in two phases:
 
 - First, the application's dependencies tree is "composed" by collecting services declared in modules, adding sub-containers, and connecting other applications.
 - After that, the application dependency tree is locked, and the services are "consumed" to execute their behavior.
@@ -91,7 +91,7 @@ The steps listed above for the two stages represent the "happy paths". If any ex
 
 ## About modules passed to `Package::boot()`
 
-Passing modules to add to `Package::boot()` has been deprecated since Modularity `v1.7.0`.
+Passing modules to add to `Package::boot()` has been deprecated since Packable `v1.7.0`.
 
 For backward compatibility, when that happens, a deprecation notice is triggered (similarly to WordPress' `_deprecated_argument`) but modules are still added.
 

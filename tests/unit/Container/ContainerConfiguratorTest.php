@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity\Tests\Unit\Container;
+namespace ThemeZee\Packable\Tests\Unit\Container;
 
-use Inpsyde\Modularity\Container\ContainerConfigurator;
-use Inpsyde\Modularity\Tests\TestCase;
+use ThemeZee\Packable\Container\ContainerConfigurator;
+use ThemeZee\Packable\Tests\TestCase;
 use Psr\Container\ContainerInterface;
 
 class ContainerConfiguratorTest extends TestCase

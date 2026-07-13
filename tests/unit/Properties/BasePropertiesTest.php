@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity\Tests\Unit\Properties;
+namespace ThemeZee\Packable\Tests\Unit\Properties;
 
-use Inpsyde\Modularity\Properties\BaseProperties;
-use Inpsyde\Modularity\Properties\Properties;
-use Inpsyde\Modularity\Tests\TestCase;
+use ThemeZee\Packable\Properties\BaseProperties;
+use ThemeZee\Packable\Properties\Properties;
+use ThemeZee\Packable\Tests\TestCase;
 
 class BasePropertiesTest extends TestCase
 {

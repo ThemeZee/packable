@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity\Container;
+namespace ThemeZee\Packable\Container;
 
 use Psr\Container\ContainerInterface;
 
 /**
- * @phpstan-import-type Service from \Inpsyde\Modularity\Module\ServiceModule
- * @phpstan-import-type ExtendingService from \Inpsyde\Modularity\Module\ExtendingModule
+ * @phpstan-import-type Service from \ThemeZee\Packable\Module\ServiceModule
+ * @phpstan-import-type ExtendingService from \ThemeZee\Packable\Module\ExtendingModule
  */
 class ContainerConfigurator
 {

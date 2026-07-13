@@ -49,11 +49,11 @@ add_action(
 
 Besides the three package-specific hooks, the `Package` instance emits a single hook whose name is not dynamic, but is fired for every `Package` instance. 
 
-The hook name is stored in the `Package::ACTION_MODULARITY_INIT` constant, it is executed right after the package-specific `Package::ACTION_INIT` hook, and unlike the three package-specific hooks, it passes the package name as first argument and the `Package` instance as second.  
+The hook name is stored in the `Package::ACTION_PACKABLE_INIT` constant, it is executed right after the package-specific `Package::ACTION_INIT` hook, and unlike the three package-specific hooks, it passes the package name as first argument and the `Package` instance as second.  
 
 ```php
 add_action(
-    Package::ACTION_MODULARITY_INIT,
+    Package::ACTION_PACKABLE_INIT,
     function (string $packageName, Package $package): void {
         if (str_starts_with($packageName, 'acme-')) {
             $package->connect(\Acme\someGlobalLibrary())
@@ -75,7 +75,7 @@ The following code shows how to use this class for a plugin. A theme or library 
 
 namespace Acme;
 
-use Inpsyde\Modularity\{Package, Properties};
+use ThemeZee\Packable\{Package, Properties};
 
 function plugin(): Package {
     static $package;
@@ -102,7 +102,7 @@ The `Acme\plugin()` function above enables external code to use an action hook t
 ```php
 namespace FooBarInc;
 
-use Inpsyde\Modularity\Package;
+use ThemeZee\Packable\Package;
 
 if (function_exists('Acme\plugin')) {
    add_action(
@@ -119,7 +119,7 @@ if (function_exists('Acme\plugin')) {
 An alternative to the previous example makes use of a plugin-specific hook to allow for extension. This hook is fired inside the `plugin()` function, right before calling `build()`:
 
 ```php
-use Inpsyde\Modularity\{Package, Properties};
+use ThemeZee\Packable\{Package, Properties};
 
 function plugin(): Package {
     static $package;
@@ -140,7 +140,7 @@ add_action('template_redirect', fn () => plugin()->boot());
 Thanks to that, any code that needs to extend this plugin, does not need to call `function_exists()`, and the bootstrap process is easier without a separate `build()`, still keeping `boot()` as late as possible. Extending code can look like the following:
 
 ```php
-use Inpsyde\Modularity\Package;
+use ThemeZee\Packable\Package;
 
 add_action(
     'acme-plugin.extend',
@@ -162,7 +162,7 @@ That can be done using the `Package::connect()` method. Here's an example:
 
 ```php
 // Theme functions.php
-use Inpsyde\Modularity\{Package, Properties};
+use ThemeZee\Packable\{Package, Properties};
 
 $theme = Package::new(Properties\ThemeProperties::new(__DIR__));
 $theme->connect(\Acme\plugin());
@@ -179,7 +179,7 @@ Package connection enables the creation of reusable libraries to be consumed by 
 ```php
 namespace Acme;
 
-use Inpsyde\Modularity\{Package, Properties};
+use ThemeZee\Packable\{Package, Properties};
 
 function myLibrary(): Package {
     static $lib;

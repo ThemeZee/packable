@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity\Properties;
+namespace ThemeZee\Packable\Properties;
 
 /**
  * @phpstan-type ComposerAuthor array{
@@ -19,12 +19,12 @@ namespace Inpsyde\Modularity\Properties;
  *      description?: string,
  *      keywords?: string[],
  *      authors?: ComposerAuthor[],
- *      extra?: array{modularity?: array<string, string>},
+ *      extra?: array{packable?: array<string, string>},
  * }
  */
 class LibraryProperties extends BaseProperties
 {
-    /** Allowed configuration in composer.json "extra.modularity" */
+    /** Allowed configuration in composer.json "extra.packable" */
     public const EXTRA_KEYS = [
         self::PROP_DOMAIN_PATH,
         self::PROP_NAME,
@@ -74,8 +74,8 @@ class LibraryProperties extends BaseProperties
             $properties[self::PROP_AUTHOR] = implode(', ', $names);
         }
 
-        // Custom settings which can be stored in composer.json "extra.modularity"
-        $extra = $composerJsonData['extra']['modularity'] ?? [];
+        // Custom settings which can be stored in composer.json "extra.packable"
+        $extra = $composerJsonData['extra']['packable'] ?? [];
         if (!is_array($extra)) {
             $extra = [];
         }

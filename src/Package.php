@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity;
+namespace ThemeZee\Packable;
 
-use Inpsyde\Modularity\Container\ContainerConfigurator;
-use Inpsyde\Modularity\Container\PackageProxyContainer;
-use Inpsyde\Modularity\Module\ExecutableModule;
-use Inpsyde\Modularity\Module\ExtendingModule;
-use Inpsyde\Modularity\Module\FactoryModule;
-use Inpsyde\Modularity\Module\Module;
-use Inpsyde\Modularity\Module\ServiceModule;
-use Inpsyde\Modularity\Properties\Properties;
+use ThemeZee\Packable\Container\ContainerConfigurator;
+use ThemeZee\Packable\Container\PackageProxyContainer;
+use ThemeZee\Packable\Module\ExecutableModule;
+use ThemeZee\Packable\Module\ExtendingModule;
+use ThemeZee\Packable\Module\FactoryModule;
+use ThemeZee\Packable\Module\Module;
+use ThemeZee\Packable\Module\ServiceModule;
+use ThemeZee\Packable\Properties\Properties;
 use Psr\Container\ContainerInterface;
 
 /**
- * @phpstan-import-type Service from \Inpsyde\Modularity\Module\ServiceModule
- * @phpstan-import-type ExtendingService from \Inpsyde\Modularity\Module\ExtendingModule
+ * @phpstan-import-type Service from \ThemeZee\Packable\Module\ServiceModule
+ * @phpstan-import-type ExtendingService from \ThemeZee\Packable\Module\ExtendingModule
  */
 class Package
 {
     /**
      * All the hooks fired in this class use this prefix.
      */
-    private const HOOK_PREFIX = 'inpsyde.modularity.';
+    private const HOOK_PREFIX = 'themezee.packable.';
 
     /**
      * Identifier to access Properties in Container.
@@ -64,14 +64,14 @@ class Package
      * @example
      *  <code>
      *  add_action(
-     *       Package::ACTION_MODULARITY_INIT,
+     *       Package::ACTION_PACKABLE_INIT,
      *       fn (string $packageName, Package $package) => // do something,
      *       10,
      *       2
      *  );
      *  </code>
      */
-    public const ACTION_MODULARITY_INIT = self::HOOK_PREFIX . self::ACTION_INIT;
+    public const ACTION_PACKABLE_INIT = self::HOOK_PREFIX . self::ACTION_INIT;
 
     /**
      * Action fired when it is safe to access container.
@@ -161,7 +161,7 @@ class Package
 
     // Map of status to package-specific and global hook, both optional (i..e, null).
     private const STATUSES_ACTIONS_MAP = [
-        self::STATUS_INITIALIZING => [self::ACTION_INIT, self::ACTION_MODULARITY_INIT],
+        self::STATUS_INITIALIZING => [self::ACTION_INIT, self::ACTION_PACKABLE_INIT],
         self::STATUS_INITIALIZED => [self::ACTION_INITIALIZED, null],
         self::STATUS_BOOTED => [self::ACTION_BOOTED, null],
     ];
@@ -621,10 +621,10 @@ class Package
      * Return the filter name to be used to extend modules of the plugin.
      *
      * If the plugin is single file `my-plugin.php` in plugins folder the filter name will be:
-     * `inpsyde.modularity.my-plugin`.
+     * `themezee.packable.my-plugin`.
      *
      * If the plugin is in a sub-folder e.g. `my-plugin/index.php` the filter name will be:
-     * `inpsyde.modularity.my-plugin` anyway, so the file name is not relevant.
+     * `themezee.packable.my-plugin` anyway, so the file name is not relevant.
      *
      * @param string $suffix
      * @return string

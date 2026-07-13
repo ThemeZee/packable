@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity\Tests\Unit\Properties;
+namespace ThemeZee\Packable\Tests\Unit\Properties;
 
 use Brain\Monkey\Functions;
-use Inpsyde\Modularity\Properties\PluginProperties;
-use Inpsyde\Modularity\Properties\Properties;
-use Inpsyde\Modularity\Tests\TestCase;
+use ThemeZee\Packable\Properties\PluginProperties;
+use ThemeZee\Packable\Properties\Properties;
+use ThemeZee\Packable\Tests\TestCase;
 
 class PluginPropertiesTest extends TestCase
 {
@@ -22,7 +22,7 @@ class PluginPropertiesTest extends TestCase
         $expectedDomainPath = 'languages/';
         $expectedName = "Properties Test";
         $expectedTextDomain = 'properties-test';
-        $expectedUri = 'https://github.com/inpsyde/modularity';
+        $expectedUri = 'https://github.com/themezee/packable';
         $expectedVersion = '1.0';
         $expectedPhpVersion = "7.4";
         $expectedWpVersion = "5.3";

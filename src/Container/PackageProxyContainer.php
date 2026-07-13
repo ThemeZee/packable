@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity\Container;
+namespace ThemeZee\Packable\Container;
 
-use Inpsyde\Modularity\Package;
+use ThemeZee\Packable\Package;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 

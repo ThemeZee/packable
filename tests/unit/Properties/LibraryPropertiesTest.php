@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity\Tests\Unit\Properties;
+namespace ThemeZee\Packable\Tests\Unit\Properties;
 
-use Inpsyde\Modularity\Properties\LibraryProperties;
-use Inpsyde\Modularity\Properties\Properties;
-use Inpsyde\Modularity\Tests\TestCase;
+use ThemeZee\Packable\Properties\LibraryProperties;
+use ThemeZee\Packable\Properties\Properties;
+use ThemeZee\Packable\Tests\TestCase;
 use org\bovigo\vfs\vfsStream;
 
 class LibraryPropertiesTest extends TestCase
@@ -105,7 +105,7 @@ class LibraryPropertiesTest extends TestCase
         $expectedDomainPath = 'languages/';
         $expectedName = "Properties Test";
         $expectedTextDomain = 'properties-test';
-        $expectedUri = 'https://github.com/inpsyde/modularity';
+        $expectedUri = 'https://github.com/themezee/packable';
         $expectedVersion = '1.0';
         $expectedPhpVersion = "7.4";
         $expectedWpVersion = "5.3";
@@ -126,7 +126,7 @@ class LibraryPropertiesTest extends TestCase
                 "php" => $expectedPhpVersion,
             ],
             "extra" => [
-                "modularity" => [
+                "packable" => [
                     "domainPath" => $expectedDomainPath,
                     "name" => $expectedName,
                     "textDomain" => $expectedTextDomain,
@@ -170,7 +170,7 @@ class LibraryPropertiesTest extends TestCase
         $which = (random_int(1, 10) > 5) ? 'require-dev' : 'require';
 
         $composerJsonData = [
-            'name' => 'inpsyde/some-package_name',
+            'name' => 'themezee/some-package_name',
             $which => [
                 'php' => $requirement,
             ],

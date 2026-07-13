@@ -2,7 +2,7 @@
 <ruleset
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/PHPCSStandards/PHP_CodeSniffer/master/phpcs.xsd"
-    name="Modularity"
+    name="Packable"
 >
     <!-- Report warnings, but return zero exit code. -->
     <config name="ignore_warnings_on_exit" value="1" />
@@ -31,9 +31,9 @@
     <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
         <properties>
             <property name="rootNamespaces" type="array">
-                <element key="src" value="Inpsyde\Modularity" />
-                <element key="tests/src" value="Inpsyde\Modularity\Tests" />
-                <element key="tests/unit" value="Inpsyde\Modularity\Tests\Unit" />
+                <element key="src" value="ThemeZee\Packable" />
+                <element key="tests/src" value="ThemeZee\Packable\Tests" />
+                <element key="tests/unit" value="ThemeZee\Packable\Tests\Unit" />
             </property>
         </properties>
     </rule>

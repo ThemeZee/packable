@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity\Tests\Unit\Module;
+namespace ThemeZee\Packable\Tests\Unit\Module;
 
-use Inpsyde\Modularity;
-use Inpsyde\Modularity\Tests\TestCase;
+use ThemeZee\Packable;
+use ThemeZee\Packable\Tests\TestCase;
 
 class ModuleClassNameIdTraitTest extends TestCase
 {
@@ -14,9 +14,9 @@ class ModuleClassNameIdTraitTest extends TestCase
      */
     public function testIdMatchesClassName(): void
     {
-        $module = new class implements Modularity\Module\Module
+        $module = new class implements Packable\Module\Module
         {
-            use Modularity\Module\ModuleClassNameIdTrait;
+            use Packable\Module\ModuleClassNameIdTrait;
         };
 
         static::assertSame(get_class($module), $module->id());

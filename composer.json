@@ -1,5 +1,5 @@
 {
-    "name": "inpsyde/modularity",
+    "name": "themezee/packable",
     "type": "library",
     "description": "Modular PSR-11 implementation for WordPress plugins, themes or libraries.",
     "license": "GPL-2.0-or-later",
@@ -44,13 +44,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Inpsyde\\Modularity\\": "src/"
+            "ThemeZee\\Packable\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Inpsyde\\Modularity\\Tests\\": "tests/src/",
-            "Inpsyde\\Modularity\\Tests\\Unit\\": "tests/unit/"
+            "ThemeZee\\Packable\\Tests\\": "tests/src/",
+            "ThemeZee\\Packable\\Tests\\Unit\\": "tests/unit/"
         }
     },
     "minimum-stability": "dev",

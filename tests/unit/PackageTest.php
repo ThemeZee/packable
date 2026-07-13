@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Inpsyde\Modularity\Tests\Unit;
+namespace ThemeZee\Packable\Tests\Unit;
 
 use Brain\Monkey;
-use Inpsyde\Modularity\Module\ExecutableModule;
-use Inpsyde\Modularity\Module\ExtendingModule;
-use Inpsyde\Modularity\Module\FactoryModule;
-use Inpsyde\Modularity\Module\ServiceModule;
-use Inpsyde\Modularity\Package;
-use Inpsyde\Modularity\Properties\Properties;
-use Inpsyde\Modularity\Tests\TestCase;
+use ThemeZee\Packable\Module\ExecutableModule;
+use ThemeZee\Packable\Module\ExtendingModule;
+use ThemeZee\Packable\Module\FactoryModule;
+use ThemeZee\Packable\Module\ServiceModule;
+use ThemeZee\Packable\Package;
+use ThemeZee\Packable\Properties\Properties;
+use ThemeZee\Packable\Tests\TestCase;
 use Psr\Container\ContainerInterface;
 
 class PackageTest extends TestCase
@@ -86,7 +86,7 @@ class PackageTest extends TestCase
     public static function provideHookNameSuffix(): \Generator
     {
         $expectedName = 'baseName';
-        $baseHookName = 'inpsyde.modularity.' . $expectedName;
+        $baseHookName = 'themezee.packable.' . $expectedName;
         yield 'no suffix' => [
             '',
             $expectedName,
@@ -608,7 +608,7 @@ class PackageTest extends TestCase
                 }
             );
 
-        Monkey\Actions\expectDone(Package::ACTION_MODULARITY_INIT)
+        Monkey\Actions\expectDone(Package::ACTION_PACKABLE_INIT)
             ->once()
             ->whenHappen(
                 static function (string $packageName, Package $package) use (&$log): void {
@@ -673,7 +673,7 @@ class PackageTest extends TestCase
                 }
             );
 
-        Monkey\Actions\expectDone(Package::ACTION_MODULARITY_INIT)
+        Monkey\Actions\expectDone(Package::ACTION_PACKABLE_INIT)
             ->once()
             ->whenHappen(
                 static function (string $packageName, Package $package) use (&$log): void {
@@ -738,7 +738,7 @@ class PackageTest extends TestCase
                 }
             );
 
-        Monkey\Actions\expectDone(Package::ACTION_MODULARITY_INIT)
+        Monkey\Actions\expectDone(Package::ACTION_PACKABLE_INIT)
             ->once()
             ->whenHappen(
                 static function (string $packageName, Package $package) use (&$log): void {
@@ -778,7 +778,7 @@ class PackageTest extends TestCase
             ->once()
             ->whenHappen([$package, 'boot']);
 
-        Monkey\Actions\expectDone(Package::ACTION_MODULARITY_INIT)->never();
+        Monkey\Actions\expectDone(Package::ACTION_PACKABLE_INIT)->never();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_INITIALIZED))->never();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_BOOTED))->never();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_FAILED_BUILD))->once();
@@ -798,7 +798,7 @@ class PackageTest extends TestCase
             ->once()
             ->whenHappen([$package, 'boot']);
 
-        Monkey\Actions\expectDone(Package::ACTION_MODULARITY_INIT)->never();
+        Monkey\Actions\expectDone(Package::ACTION_PACKABLE_INIT)->never();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_INITIALIZED))->never();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_BOOTED))->never();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_FAILED_BUILD))->once();
@@ -820,7 +820,7 @@ class PackageTest extends TestCase
             ->whenHappen([$package, 'boot']);
 
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_INIT))->once();
-        Monkey\Actions\expectDone(Package::ACTION_MODULARITY_INIT)->once();
+        Monkey\Actions\expectDone(Package::ACTION_PACKABLE_INIT)->once();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_BOOTED))->never();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_FAILED_BUILD))->once();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_FAILED_BOOT))->never();
@@ -841,7 +841,7 @@ class PackageTest extends TestCase
             ->whenHappen([$package, 'boot']);
 
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_INIT))->once();
-        Monkey\Actions\expectDone(Package::ACTION_MODULARITY_INIT)->once();
+        Monkey\Actions\expectDone(Package::ACTION_PACKABLE_INIT)->once();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_INITIALIZED))->once();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_FAILED_BUILD))->never();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_FAILED_BOOT))->once();
@@ -861,7 +861,7 @@ class PackageTest extends TestCase
             ->once()
             ->whenHappen([$package, 'build']);
 
-        Monkey\Actions\expectDone(Package::ACTION_MODULARITY_INIT)->never();
+        Monkey\Actions\expectDone(Package::ACTION_PACKABLE_INIT)->never();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_INITIALIZED))->never();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_BOOTED))->never();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_FAILED_BUILD))->once();
@@ -883,7 +883,7 @@ class PackageTest extends TestCase
             ->whenHappen([$package, 'build']);
 
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_INIT))->once();
-        Monkey\Actions\expectDone(Package::ACTION_MODULARITY_INIT)->once();
+        Monkey\Actions\expectDone(Package::ACTION_PACKABLE_INIT)->once();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_BOOTED))->never();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_FAILED_BUILD))->once();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_FAILED_BOOT))->never();
@@ -904,7 +904,7 @@ class PackageTest extends TestCase
             ->whenHappen([$package, 'build']);
 
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_INIT))->once();
-        Monkey\Actions\expectDone(Package::ACTION_MODULARITY_INIT)->once();
+        Monkey\Actions\expectDone(Package::ACTION_PACKABLE_INIT)->once();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_INITIALIZED))->once();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_FAILED_BUILD))->once();
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_FAILED_BOOT))->once();
