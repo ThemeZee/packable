@@ -1,0 +1,18 @@
+### Composer template
+composer.phar
+composer.lock
+vendor/
+
+# PHPUnit
+.phpunit.result.cache
+phpunit.xml
+coverage/
+
+# tmp files
+tmp/
+
+## PHPStorm
+.idea/
+
+## DDEV
+.ddev

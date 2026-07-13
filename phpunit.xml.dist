@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+    bootstrap="./tests/boot.php"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    convertDeprecationsToExceptions="false"
+    backupGlobals="false"
+    stopOnFailure="false"
+    failOnWarning="false">
+
+    <php>
+        <ini name="error_reporting" value="E_ALL"/>
+    </php>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+        <exclude>
+            <directory>./vendor</directory>
+        </exclude>
+        <report>
+            <html outputDirectory="coverage"/>
+        </report>
+    </coverage>
+
+    <testsuites>
+        <testsuite name="Unit">
+            <directory suffix="Test.php">./tests/unit/</directory>
+        </testsuite>
+    </testsuites>
+
+</phpunit>
