@@ -8,7 +8,6 @@ use Psr\Container\ContainerInterface;
 
 /**
  * @phpstan-import-type Service from \ThemeZee\Packable\Module\ServiceModule
- * @phpstan-import-type ExtendingService from \ThemeZee\Packable\Module\ExtendingModule
  */
 class ContainerConfigurator
 {
@@ -16,7 +15,6 @@ class ContainerConfigurator
     private array $services = [];
     /** @var array<string, bool> */
     private array $factoryIds = [];
-    private ServiceExtensions $extensions;
     private ?ContainerInterface $compiledContainer = null;
     /** @var ContainerInterface[] */
     private array $containers = [];
@@ -24,10 +22,9 @@ class ContainerConfigurator
     /**
      * @param ContainerInterface[] $containers
      */
-    public function __construct(array $containers = [], ?ServiceExtensions $extensions = null)
+    public function __construct(array $containers = [])
     {
         array_map([$this, 'addContainer'], $containers);
-        $this->extensions = $extensions ?? new ServiceExtensions();
     }
 
     /**
@@ -92,25 +89,6 @@ class ContainerConfigurator
     }
 
     /**
-     * @param string $id
-     * @param ExtendingService $extender
-     * @return void
-     */
-    public function addExtension(string $id, callable $extender): void
-    {
-        $this->extensions->add($id, $extender);
-    }
-
-    /**
-     * @param string $id
-     * @return bool
-     */
-    public function hasExtension(string $id): bool
-    {
-        return $this->extensions->has($id);
-    }
-
-    /**
      * @return ContainerInterface
      *
      * @phpstan-assert ContainerInterface $this->compiledContainer
@@ -121,7 +99,6 @@ class ContainerConfigurator
             $this->compiledContainer = new ReadOnlyContainer(
                 $this->services,
                 $this->factoryIds,
-                $this->extensions,
                 $this->containers
             );
         }

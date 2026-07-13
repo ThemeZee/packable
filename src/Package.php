@@ -7,7 +7,6 @@ namespace ThemeZee\Packable;
 use ThemeZee\Packable\Container\ContainerConfigurator;
 use ThemeZee\Packable\Container\PackageProxyContainer;
 use ThemeZee\Packable\Module\ExecutableModule;
-use ThemeZee\Packable\Module\ExtendingModule;
 use ThemeZee\Packable\Module\FactoryModule;
 use ThemeZee\Packable\Module\Module;
 use ThemeZee\Packable\Module\ServiceModule;
@@ -16,7 +15,6 @@ use Psr\Container\ContainerInterface;
 
 /**
  * @phpstan-import-type Service from \ThemeZee\Packable\Module\ServiceModule
- * @phpstan-import-type ExtendingService from \ThemeZee\Packable\Module\ExtendingModule
  */
 class Package
 {
@@ -125,7 +123,6 @@ class Package
     public const MODULE_NOT_ADDED = 'not-added';
     public const MODULE_REGISTERED = 'registered';
     public const MODULE_REGISTERED_FACTORIES = 'registered-factories';
-    public const MODULE_EXTENDED = 'extended';
     public const MODULE_EXECUTED = 'executed';
     public const MODULE_EXECUTION_FAILED = 'executed-failed';
     public const MODULES_ALL = '*';
@@ -244,10 +241,6 @@ class Package
                 $module,
                 self::MODULE_REGISTERED_FACTORIES
             );
-            $extended = $this->addModuleServices(
-                $module,
-                self::MODULE_EXTENDED
-            );
             $isExecutable = $module instanceof ExecutableModule;
 
             // ExecutableModules are collected and executed on Package::boot()
@@ -257,7 +250,7 @@ class Package
                 $this->executables[] = $module;
             }
 
-            $added = $registeredServices || $registeredFactories || $extended || $isExecutable;
+            $added = $registeredServices || $registeredFactories || $isExecutable;
             $status = $added ? self::MODULE_ADDED : self::MODULE_NOT_ADDED;
             $this->moduleProgress($module->id(), $status);
         } catch (\Throwable $throwable) {
@@ -506,9 +499,9 @@ class Package
      */
     private function addModuleServices(Module $module, string $status): bool
     {
-        /** @var null|array<string, Service|ExtendingService> $services */
+        /** @var null|array<string, Service> $services */
         $services = null;
-        /** @var null|callable(string, Service|ExtendingService): void $addCallback */
+        /** @var null|callable(string, Service): void $addCallback */
         $addCallback = null;
         switch ($status) {
             case self::MODULE_REGISTERED:
@@ -518,10 +511,6 @@ class Package
             case self::MODULE_REGISTERED_FACTORIES:
                 $services = $module instanceof FactoryModule ? $module->factories() : null;
                 $addCallback = [$this->containerConfigurator, 'addFactory'];
-                break;
-            case self::MODULE_EXTENDED:
-                $services = $module instanceof ExtendingModule ? $module->extensions() : null;
-                $addCallback = [$this->containerConfigurator, 'addExtension'];
                 break;
         }
 

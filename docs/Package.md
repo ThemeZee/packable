@@ -6,7 +6,7 @@
 
 ## "Build" and "Boot" procedures
 
-The `Package` class is responsible for "bootstrapping" the application and, by emitting hooks, enable external code to register and extend services, as well as "connecting" other `Package` instances sharing the containers.
+The `Package` class is responsible for "bootstrapping" the application and, by emitting hooks, enable external code to register services, as well as "connecting" other `Package` instances sharing the containers.
 
 That happens in two separate phases, the "build" and "boot" phase.
 
@@ -294,9 +294,8 @@ Used to check the status for a given `Module::id()`.  The following statuses are
 |----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `Package::MODULE_REGISTERED`           | A `ServiceModule` was added and returned a non-zero number of services.                                                                                                                                                  |
 | `Package::MODULE_REGISTERED_FACTORIES` | A `FactoryModule` was added and returned a non-zero number of factories.                                                                                                                                                 |
-| `Package::MODULE_EXTENDED`             | An `ExtendingModule` was added and returned a non-zero number of extension.                                                                                                                                              |
-| `Package::MODULE_ADDED`                | _Any_ of the three statuses above applied, or a module implements `ExecutableModule`                                                                                                                                     |
-| `Package::MODULE_NOT_ADDED`            | _None_ of the first three statuses applied for a modules that is non-executable. That might happen in two scenarios: a module only implemented base `Module` interface, or did not return any service/factory/extension. |
+| `Package::MODULE_ADDED`                | _Any_ of the two statuses above applied, or a module implements `ExecutableModule`                                                                                                                                       |
+| `Package::MODULE_NOT_ADDED`            | _None_ of the first two statuses applied for a modules that is non-executable. That might happen in two scenarios: a module only implemented base `Module` interface, or did not return any service/factory.             |
 | `Package::MODULE_EXECUTED`             | An `ExecutableModule::run()` method was called and returned `true`.                                                                                                                                                      |
 | `Package::MODULE_EXECUTION_FAILED`     | An `ExecutableModule::run()` method was called and returned `false`.                                                                                                                                                     |
 

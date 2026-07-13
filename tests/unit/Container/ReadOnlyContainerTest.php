@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace ThemeZee\Packable\Tests\Unit\Container;
 
 use ThemeZee\Packable\Container\ReadOnlyContainer as Container;
-use ThemeZee\Packable\Container\ServiceExtensions;
 use ThemeZee\Packable\Tests\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 /**
  * @phpstan-import-type Service from \ThemeZee\Packable\Module\ServiceModule
- * @phpstan-import-type ExtendingService from \ThemeZee\Packable\Module\ExtendingModule
  */
 class ReadOnlyContainerTest extends TestCase
 {
@@ -174,40 +172,6 @@ class ReadOnlyContainerTest extends TestCase
     }
 
     /**
-     * @test
-     */
-    public function testServiceExtensionsBackwardCompatibility(): void
-    {
-        $service = static function (): object {
-            return (object) ['count' => 0];
-        };
-
-        $extension = static function (object $thing): object {
-            /** @var object{count:int}&\stdClass $thing */
-            $thing->count++;
-
-            return $thing;
-        };
-
-        $container = new Container(['thing' => $service], [], ['thing' => $extension], []);
-
-        $resolved = $container->get('thing');
-
-        static::assertInstanceOf(\stdClass::class, $resolved);
-        static::assertSame(1, $resolved->count);
-    }
-
-    /**
-     * @test
-     */
-    public function testServiceExtensionsBackwardCompatibilityBreaksOnWrongType(): void
-    {
-        $this->expectException(\TypeError::class);
-        // @phpstan-ignore argument.type (pass invalid type on purpose to trigger exception)
-        new Container([], [], ServiceExtensions::class, []);
-    }
-
-    /**
      * @param array<string, Service> $services
      * @param array<string, bool> $factoryIds
      * @param ContainerInterface[] $containers
@@ -220,6 +184,6 @@ class ReadOnlyContainerTest extends TestCase
         array $containers = []
     ): Container {
 
-        return new Container($services, $factoryIds, new ServiceExtensions(), $containers);
+        return new Container($services, $factoryIds, $containers);
     }
 }
