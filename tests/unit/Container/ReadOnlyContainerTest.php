@@ -53,7 +53,7 @@ class ReadOnlyContainerTest extends TestCase
         static::assertTrue($testee->has($expectedId));
         // resolve Service
         static::assertSame($expected, $testee->get($expectedId));
-        // check in Factories
+        // check in resolved Services
         static::assertTrue($testee->has($expectedId));
     }
 
@@ -115,7 +115,7 @@ class ReadOnlyContainerTest extends TestCase
             }
         };
 
-        $testee = $this->factoryContainer([], [], [$childContainer]);
+        $testee = $this->factoryContainer([], [$childContainer]);
 
         // check in child Container
         static::assertTrue($testee->has($expectedKey));
@@ -128,10 +128,9 @@ class ReadOnlyContainerTest extends TestCase
     /**
      * @test
      */
-    public function testFactoriesAndServices(): void
+    public function testServicesAreCached(): void
     {
         $expectedServiceKey = 'service';
-        $expectedFactoryKey = 'factory';
         $services = [
             $expectedServiceKey => function (): object {
                 return new class {
@@ -145,45 +144,26 @@ class ReadOnlyContainerTest extends TestCase
                     }
                 };
             },
-            $expectedFactoryKey => function (): object {
-                return new class {
-                    protected int $factoryCounter = 0;
-
-                    public function count(): int
-                    {
-                        $this->factoryCounter++;
-
-                        return $this->factoryCounter;
-                    }
-                };
-            },
         ];
-        $factoryIds = [$expectedFactoryKey => true];
 
-        $testee = $this->factoryContainer($services, $factoryIds);
+        $testee = $this->factoryContainer($services);
 
         // Services are cached and same instance is returned.
         static::assertSame(1, $testee->get($expectedServiceKey)->count());
         static::assertSame(2, $testee->get($expectedServiceKey)->count());
-
-        // Factories always a new instance is created.
-        static::assertSame(1, $testee->get($expectedFactoryKey)->count());
-        static::assertSame(1, $testee->get($expectedFactoryKey)->count());
     }
 
     /**
      * @param array<string, Service> $services
-     * @param array<string, bool> $factoryIds
      * @param ContainerInterface[] $containers
      *
      * @return Container
      */
     private function factoryContainer(
         array $services = [],
-        array $factoryIds = [],
         array $containers = []
     ): Container {
 
-        return new Container($services, $factoryIds, $containers);
+        return new Container($services, $containers);
     }
 }

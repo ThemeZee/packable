@@ -6,7 +6,6 @@ namespace ThemeZee\Packable\Tests;
 
 use Brain\Monkey;
 use ThemeZee\Packable\Module\ExecutableModule;
-use ThemeZee\Packable\Module\FactoryModule;
 use ThemeZee\Packable\Module\Module;
 use ThemeZee\Packable\Module\ServiceModule;
 use ThemeZee\Packable\Package;
@@ -76,10 +75,6 @@ abstract class TestCase extends FrameworkTestCase
 
         if (in_array(ServiceModule::class, $interfaces, true)) {
             $stub->allows('services')->byDefault()->andReturn([]);
-        }
-
-        if (in_array(FactoryModule::class, $interfaces, true)) {
-            $stub->allows('factories')->byDefault()->andReturn([]);
         }
 
         if (in_array(ExecutableModule::class, $interfaces, true)) {

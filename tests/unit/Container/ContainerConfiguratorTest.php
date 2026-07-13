@@ -49,30 +49,6 @@ class ContainerConfiguratorTest extends TestCase
     /**
      * @test
      */
-    public function testAddHasFactory(): void
-    {
-        $expectedKey = 'key';
-        $expectedValue = new class {
-        };
-
-        $testee = new ContainerConfigurator();
-
-        static::assertFalse($testee->hasService($expectedKey));
-
-        $testee->addFactory(
-            $expectedKey,
-            /** @return mixed */
-            static function () use ($expectedValue) {
-                return $expectedValue;
-            }
-        );
-
-        static::assertTrue($testee->hasService($expectedKey));
-    }
-
-    /**
-     * @test
-     */
     public function testServiceOverride(): void
     {
         $expectedKey = 'key';
@@ -94,100 +70,6 @@ class ContainerConfiguratorTest extends TestCase
         $result = $container->get($expectedKey);
 
         self::assertInstanceOf(\DateTimeImmutable::class, $result);
-    }
-
-    /**
-     * @test
-     */
-    public function testFactoryOverride(): void
-    {
-        $expectedKey = 'key';
-
-        $testee = new ContainerConfigurator();
-        $testee->addFactory(
-            $expectedKey,
-            static function (): \DateTime {
-                return new \DateTime();
-            }
-        );
-        $testee->addFactory(
-            $expectedKey,
-            static function (): \DateTimeImmutable {
-                return new \DateTimeImmutable();
-            }
-        );
-        $container = $testee->createReadOnlyContainer();
-        $result = $container->get($expectedKey);
-
-        self::assertInstanceOf(\DateTimeImmutable::class, $result);
-    }
-
-    /**
-     * @test
-     */
-    public function testFactoryOverridesService(): void
-    {
-        $expectedKey = 'key';
-
-        $testee = new ContainerConfigurator();
-        $testee->addService(
-            $expectedKey,
-            static function (): \DateTime {
-                return new \DateTime();
-            }
-        );
-        $testee->addFactory(
-            $expectedKey,
-            static function (): \DateTimeImmutable {
-                return new \DateTimeImmutable();
-            }
-        );
-        $container = $testee->createReadOnlyContainer();
-        $result = $container->get($expectedKey);
-
-        self::assertInstanceOf(\DateTimeImmutable::class, $result);
-
-        $secondResult = $container->get($expectedKey);
-
-        self::assertNotSame(
-            $result,
-            $secondResult,
-            'Container should return new instances after overriding the initial service'
-        );
-    }
-
-    /**
-     * @test
-     */
-    public function testServiceOverridesFactory(): void
-    {
-        $expectedKey = 'key';
-
-        $testee = new ContainerConfigurator();
-        $testee->addFactory(
-            $expectedKey,
-            static function (): \DateTime {
-                return new \DateTime();
-            }
-        );
-        $testee->addService(
-            $expectedKey,
-            static function (): \DateTimeImmutable {
-                return new \DateTimeImmutable();
-            }
-        );
-        $container = $testee->createReadOnlyContainer();
-        $result = $container->get($expectedKey);
-
-        self::assertInstanceOf(\DateTimeImmutable::class, $result);
-
-        $secondResult = $container->get($expectedKey);
-
-        self::assertSame(
-            $result,
-            $secondResult,
-            'Container entry should remain the same instance after overriding the initial factory'
-        );
     }
 
     /**

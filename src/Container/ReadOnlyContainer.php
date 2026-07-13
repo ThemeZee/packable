@@ -14,8 +14,6 @@ class ReadOnlyContainer implements ContainerInterface
 {
     /** @var array<string, Service> */
     private array $services;
-    /** @var array<string, bool> */
-    private array $factoryIds;
     /** @var ContainerInterface[] */
     private array $containers;
     /** @var array<string, mixed> */
@@ -23,17 +21,14 @@ class ReadOnlyContainer implements ContainerInterface
 
     /**
      * @param array<string, Service> $services
-     * @param array<string, bool> $factoryIds
      * @param ContainerInterface[] $containers
      */
     public function __construct(
         array $services,
-        array $factoryIds,
         array $containers
     ) {
 
         $this->services = $services;
-        $this->factoryIds = $factoryIds;
         $this->containers = $containers;
     }
 
@@ -49,11 +44,8 @@ class ReadOnlyContainer implements ContainerInterface
 
         if (array_key_exists($id, $this->services)) {
             $service = $this->services[$id]($this);
-
-            if (!isset($this->factoryIds[$id])) {
-                $this->resolvedServices[$id] = $service;
-                unset($this->services[$id]);
-            }
+            $this->resolvedServices[$id] = $service;
+            unset($this->services[$id]);
 
             return $service;
         }

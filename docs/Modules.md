@@ -1,7 +1,7 @@
 # Modules
 Services can be _registered_ and _booted_ via a so-called Module in your Application.
 
-Those Modules can be registered to your Application via the provided `ServiceModule`-, `FactoryModule`- and `ExecutableModule`-interfaces.
+Those Modules can be registered to your Application via the provided `ServiceModule`- and `ExecutableModule`-interfaces.
 
 **Default Modules** are registered before `Package::boot()`:
 
@@ -9,7 +9,6 @@ Those Modules can be registered to your Application via the provided `ServiceMod
 <?php
 ThemeZee\Packable\Package::new($properties)
     ->addModule(new ModuleWhichProvidesServices())
-    ->addModule(new ModuleWhichProvidesFactories())
     ->addModule(new ModuleWhichIsExecuted())
     ->boot();
 ```
@@ -39,33 +38,6 @@ class ModuleWhichProvidesServices implements ServiceModule
         return [
             ServiceOne::class => static function(ContainerInterface $container): ServiceOne {
                 return new ServiceOne();
-            } 
-        ];
-    }
-}
-```
-
-## FactoryModule
-The `FactoryModule::factories(): array` will allow you to register new Services as factories. This means, that every time you’re accessing the Service via Container::get() you’ll get a new instance of the Service.
-
-```php
-<?php
-
-declare(strict_types=1);
-
-use ThemeZee\Packable\Module\FactoryModule;
-use ThemeZee\Packable\Module\ModuleClassNameIdTrait;
-use Psr\Container\ContainerInterface;
-
-class ModuleWhichProvidesFactories implements FactoryModule
-{
-    use ModuleClassNameIdTrait;
-
-    public function factories() : array
-    {
-        return [
-            FactoryServiceOne::class => static function(ContainerInterface $container): FactoryServiceOne {
-                return new FactoryServiceOne();
             } 
         ];
     }
@@ -133,7 +105,7 @@ class ModuleFour implements ExecutableModule
 }
 ```
 
-### Service/Factory overrides
+### Service overrides
 When the same Service id is registered more than once by multiple modules, the latter will override the former.
 
 ```php

@@ -7,7 +7,6 @@ namespace ThemeZee\Packable;
 use ThemeZee\Packable\Container\ContainerConfigurator;
 use ThemeZee\Packable\Container\PackageProxyContainer;
 use ThemeZee\Packable\Module\ExecutableModule;
-use ThemeZee\Packable\Module\FactoryModule;
 use ThemeZee\Packable\Module\Module;
 use ThemeZee\Packable\Module\ServiceModule;
 use ThemeZee\Packable\Properties\Properties;
@@ -122,7 +121,6 @@ class Package
     public const MODULE_ADDED = 'added';
     public const MODULE_NOT_ADDED = 'not-added';
     public const MODULE_REGISTERED = 'registered';
-    public const MODULE_REGISTERED_FACTORIES = 'registered-factories';
     public const MODULE_EXECUTED = 'executed';
     public const MODULE_EXECUTION_FAILED = 'executed-failed';
     public const MODULES_ALL = '*';
@@ -233,14 +231,7 @@ class Package
             $this->assertStatus(self::STATUS_FAILED, $reason, '!=');
             $this->assertStatus(self::STATUS_INITIALIZING, $reason, '<=');
 
-            $registeredServices = $this->addModuleServices(
-                $module,
-                self::MODULE_REGISTERED
-            );
-            $registeredFactories = $this->addModuleServices(
-                $module,
-                self::MODULE_REGISTERED_FACTORIES
-            );
+            $registeredServices = $this->addModuleServices($module);
             $isExecutable = $module instanceof ExecutableModule;
 
             // ExecutableModules are collected and executed on Package::boot()
@@ -250,7 +241,7 @@ class Package
                 $this->executables[] = $module;
             }
 
-            $added = $registeredServices || $registeredFactories || $isExecutable;
+            $added = $registeredServices || $isExecutable;
             $status = $added ? self::MODULE_ADDED : self::MODULE_NOT_ADDED;
             $this->moduleProgress($module->id(), $status);
         } catch (\Throwable $throwable) {
@@ -494,37 +485,24 @@ class Package
 
     /**
      * @param Module $module
-     * @param string $status
      * @return bool
      */
-    private function addModuleServices(Module $module, string $status): bool
+    private function addModuleServices(Module $module): bool
     {
         /** @var null|array<string, Service> $services */
-        $services = null;
-        /** @var null|callable(string, Service): void $addCallback */
-        $addCallback = null;
-        switch ($status) {
-            case self::MODULE_REGISTERED:
-                $services = $module instanceof ServiceModule ? $module->services() : null;
-                $addCallback = [$this->containerConfigurator, 'addService'];
-                break;
-            case self::MODULE_REGISTERED_FACTORIES:
-                $services = $module instanceof FactoryModule ? $module->factories() : null;
-                $addCallback = [$this->containerConfigurator, 'addFactory'];
-                break;
-        }
+        $services = $module instanceof ServiceModule ? $module->services() : null;
 
-        if (($services === null) || ($services === []) || ($addCallback === null)) {
+        if (($services === null) || ($services === [])) {
             return false;
         }
 
         $ids = [];
         foreach ($services as $id => $service) {
-            $addCallback($id, $service);
+            $this->containerConfigurator->addService($id, $service);
             $ids[] = $id;
         }
 
-        $this->moduleProgress($module->id(), $status, $ids);
+        $this->moduleProgress($module->id(), self::MODULE_REGISTERED, $ids);
 
         return true;
     }

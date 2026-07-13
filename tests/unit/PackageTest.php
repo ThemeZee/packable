@@ -6,7 +6,6 @@ namespace ThemeZee\Packable\Tests\Unit;
 
 use Brain\Monkey;
 use ThemeZee\Packable\Module\ExecutableModule;
-use ThemeZee\Packable\Module\FactoryModule;
 use ThemeZee\Packable\Module\ServiceModule;
 use ThemeZee\Packable\Package;
 use ThemeZee\Packable\Properties\Properties;
@@ -127,7 +126,6 @@ class PackageTest extends TestCase
         static::assertTrue($package->statusIs(Package::STATUS_DONE));
         static::assertTrue($package->moduleIs($expectedId, Package::MODULE_NOT_ADDED));
         static::assertFalse($package->moduleIs($expectedId, Package::MODULE_REGISTERED));
-        static::assertFalse($package->moduleIs($expectedId, Package::MODULE_REGISTERED_FACTORIES));
         static::assertFalse($package->moduleIs($expectedId, Package::MODULE_ADDED));
 
         // booting again return false, but we expect no breakage
@@ -151,7 +149,6 @@ class PackageTest extends TestCase
         static::assertTrue($package->statusIs(Package::STATUS_INITIALIZED));
         static::assertTrue($package->moduleIs($expectedId, Package::MODULE_NOT_ADDED));
         static::assertFalse($package->moduleIs($expectedId, Package::MODULE_REGISTERED));
-        static::assertFalse($package->moduleIs($expectedId, Package::MODULE_REGISTERED_FACTORIES));
         static::assertFalse($package->moduleIs($expectedId, Package::MODULE_ADDED));
 
         // building again we expect no breakage
@@ -173,7 +170,6 @@ class PackageTest extends TestCase
         static::assertTrue($package->statusIs(Package::STATUS_DONE));
         static::assertFalse($package->moduleIs($moduleId, Package::MODULE_NOT_ADDED));
         static::assertTrue($package->moduleIs($moduleId, Package::MODULE_REGISTERED));
-        static::assertFalse($package->moduleIs($moduleId, Package::MODULE_REGISTERED_FACTORIES));
         static::assertTrue($package->moduleIs($moduleId, Package::MODULE_ADDED));
         static::assertTrue($package->container()->has($serviceId));
     }
@@ -192,53 +188,8 @@ class PackageTest extends TestCase
         static::assertTrue($package->statusIs(Package::STATUS_INITIALIZED));
         static::assertFalse($package->moduleIs($moduleId, Package::MODULE_NOT_ADDED));
         static::assertTrue($package->moduleIs($moduleId, Package::MODULE_REGISTERED));
-        static::assertFalse($package->moduleIs($moduleId, Package::MODULE_REGISTERED_FACTORIES));
         static::assertTrue($package->moduleIs($moduleId, Package::MODULE_ADDED));
         static::assertTrue($package->container()->has($serviceId));
-    }
-
-    /**
-     * @test
-     */
-    public function testBootWithFactoryModule(): void
-    {
-        $moduleId = 'my-factory-module';
-        $factoryId = 'factory-id';
-
-        $module = $this->stubModule($moduleId, FactoryModule::class);
-        $module->expects('factories')->andReturn($this->stubServices($factoryId));
-
-        $package = Package::new($this->stubProperties())->addModule($module);
-
-        static::assertTrue($package->boot());
-        static::assertTrue($package->statusIs(Package::STATUS_DONE));
-        static::assertFalse($package->moduleIs($moduleId, Package::MODULE_NOT_ADDED));
-        static::assertFalse($package->moduleIs($moduleId, Package::MODULE_REGISTERED));
-        static::assertTrue($package->moduleIs($moduleId, Package::MODULE_REGISTERED_FACTORIES));
-        static::assertTrue($package->moduleIs($moduleId, Package::MODULE_ADDED));
-        static::assertTrue($package->container()->has($factoryId));
-    }
-
-    /**
-     * @test
-     */
-    public function testBuildWithFactoryModule(): void
-    {
-        $moduleId = 'my-factory-module';
-        $factoryId = 'factory-id';
-
-        $module = $this->stubModule($moduleId, FactoryModule::class);
-        $module->expects('factories')->andReturn($this->stubServices($factoryId));
-
-        $package = Package::new($this->stubProperties())->addModule($module);
-
-        $package->build();
-        static::assertTrue($package->statusIs(Package::STATUS_INITIALIZED));
-        static::assertFalse($package->moduleIs($moduleId, Package::MODULE_NOT_ADDED));
-        static::assertFalse($package->moduleIs($moduleId, Package::MODULE_REGISTERED));
-        static::assertTrue($package->moduleIs($moduleId, Package::MODULE_REGISTERED_FACTORIES));
-        static::assertTrue($package->moduleIs($moduleId, Package::MODULE_ADDED));
-        static::assertTrue($package->container()->has($factoryId));
     }
 
     /**
@@ -806,29 +757,21 @@ class PackageTest extends TestCase
     {
         $emptyModule = $this->stubModule('empty');
         $emptyServicesModule = $this->stubModule('empty_services', ServiceModule::class);
-        $emptyFactoriesModule = $this->stubModule('empty_factories', FactoryModule::class);
 
         $servicesModule = $this->stubModule('service', ServiceModule::class);
         $servicesModule->expects('services')->andReturn($this->stubServices('S1', 'S2'));
 
-        $factoriesModule = $this->stubModule('factory', FactoryModule::class);
-        $factoriesModule->expects('factories')->andReturn($this->stubServices('F'));
-
         $multiModule = $this->stubModule(
             'multi',
-            ServiceModule::class,
-            FactoryModule::class
+            ServiceModule::class
         );
         $multiModule->expects('services')->andReturn($this->stubServices('MS1'));
-        $multiModule->expects('factories')->andReturn($this->stubServices('MF1', 'MF2'));
 
         $package = Package::new($this->stubProperties('name', true))
             ->addModule($emptyModule)
             ->addModule($emptyServicesModule)
-            ->addModule($emptyFactoriesModule)
             ->addModule($servicesModule)
-            ->addModule($multiModule)
-            ->addModule($factoriesModule);
+            ->addModule($multiModule);
 
         static::assertTrue($package->build()->boot());
 
@@ -836,32 +779,22 @@ class PackageTest extends TestCase
             Package::MODULES_ALL => [
                 'empty not-added',
                 'empty_services not-added',
-                'empty_factories not-added',
                 'service registered (S1, S2)',
                 'service added',
                 'multi registered (MS1)',
-                'multi registered-factories (MF1, MF2)',
                 'multi added',
-                'factory registered-factories (F)',
-                'factory added',
             ],
             Package::MODULE_NOT_ADDED => [
                 'empty',
                 'empty_services',
-                'empty_factories',
             ],
             Package::MODULE_REGISTERED => [
                 'service',
                 'multi',
             ],
-            Package::MODULE_REGISTERED_FACTORIES => [
-                'multi',
-                'factory',
-            ],
             Package::MODULE_ADDED => [
                 'service',
                 'multi',
-                'factory',
             ],
         ];
 
@@ -882,29 +815,21 @@ class PackageTest extends TestCase
     {
         $emptyModule = $this->stubModule('empty');
         $emptyServicesModule = $this->stubModule('empty_services', ServiceModule::class);
-        $emptyFactoriesModule = $this->stubModule('empty_factories', FactoryModule::class);
 
         $servicesModule = $this->stubModule('service', ServiceModule::class);
         $servicesModule->expects('services')->andReturn($this->stubServices('S1', 'S2'));
 
-        $factoriesModule = $this->stubModule('factory', FactoryModule::class);
-        $factoriesModule->expects('factories')->andReturn($this->stubServices('F'));
-
         $multiModule = $this->stubModule(
             'multi',
-            ServiceModule::class,
-            FactoryModule::class
+            ServiceModule::class
         );
         $multiModule->expects('services')->andReturn($this->stubServices('MS1'));
-        $multiModule->expects('factories')->andReturn($this->stubServices('MF1', 'MF2'));
 
         $package = Package::new($this->stubProperties('name', false))
             ->addModule($emptyModule)
             ->addModule($emptyServicesModule)
-            ->addModule($emptyFactoriesModule)
             ->addModule($servicesModule)
-            ->addModule($multiModule)
-            ->addModule($factoriesModule);
+            ->addModule($multiModule);
 
         static::assertTrue($package->build()->boot());
 
@@ -912,32 +837,22 @@ class PackageTest extends TestCase
             Package::MODULES_ALL => [
                 'empty ' . Package::MODULE_NOT_ADDED,
                 'empty_services ' . Package::MODULE_NOT_ADDED,
-                'empty_factories ' . Package::MODULE_NOT_ADDED,
                 'service ' . Package::MODULE_REGISTERED,
                 'service ' . Package::MODULE_ADDED,
                 'multi ' . Package::MODULE_REGISTERED,
-                'multi ' . Package::MODULE_REGISTERED_FACTORIES,
                 'multi ' . Package::MODULE_ADDED,
-                'factory ' . Package::MODULE_REGISTERED_FACTORIES,
-                'factory ' . Package::MODULE_ADDED,
             ],
             Package::MODULE_NOT_ADDED => [
                 'empty',
                 'empty_services',
-                'empty_factories',
             ],
             Package::MODULE_REGISTERED => [
                 'service',
                 'multi',
             ],
-            Package::MODULE_REGISTERED_FACTORIES => [
-                'multi',
-                'factory',
-            ],
             Package::MODULE_ADDED => [
                 'service',
                 'multi',
-                'factory',
             ],
         ];
 

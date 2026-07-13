@@ -1,7 +1,7 @@
 # Default Container based on PSR-11
-The used Container in your Application is based on PSR-11 and allows you via Modules to set and get Services. The consuming Services from your Modules has read-only access to the Container. Adding new Factories to the Container will only be possible via an own Container or a Module.
+The used Container in your Application is based on PSR-11 and allows you via Modules to set and get Services. The consuming Services from your Modules has read-only access to the Container. Adding new Services to the Container will only be possible via an own Container or a Module.
 
-The default (primary) Container is a delegating Container and receives aside from Factories also PSR-based child Containers, which are registered via Package-class. If a Service cannot be resolved via the primary Container, it will resort to the has and get methods of the delegates to resolve the requested Service.
+The default (primary) Container is a delegating Container and receives aside from its own Services also PSR-based child Containers, which are registered via Package-class. If a Service cannot be resolved via the primary Container, it will resort to the has and get methods of the delegates to resolve the requested Service.
 
 You can simply register an own PSR-Container via Package like following:
 

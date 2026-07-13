@@ -13,8 +13,6 @@ class ContainerConfigurator
 {
     /** @var array<string, Service> */
     private array $services = [];
-    /** @var array<string, bool> */
-    private array $factoryIds = [];
     private ?ContainerInterface $compiledContainer = null;
     /** @var ContainerInterface[] */
     private array $containers = [];
@@ -38,18 +36,6 @@ class ContainerConfigurator
 
     /**
      * @param string $id
-     * @param Service $factory
-     */
-    public function addFactory(string $id, callable $factory): void
-    {
-        $this->addService($id, $factory);
-        // We're using a hash table to detect later
-        // via isset() if a Service as a Factory.
-        $this->factoryIds[$id] = true;
-    }
-
-    /**
-     * @param string $id
      * @param Service $service
      * @return void
      */
@@ -60,12 +46,7 @@ class ContainerConfigurator
          * allowing a simple workflow for *intentional* overrides
          * while accepting the (small?) risk of *accidental* overrides
          * that could be hard to notice and debug.
-         *
-         * Clear a factory flag in case it was a factory.
-         * If needs be, it will get re-added after this function completes.
          */
-        unset($this->factoryIds[$id]);
-
         $this->services[$id] = $service;
     }
 
@@ -98,7 +79,6 @@ class ContainerConfigurator
         if ($this->compiledContainer === null) {
             $this->compiledContainer = new ReadOnlyContainer(
                 $this->services,
-                $this->factoryIds,
                 $this->containers
             );
         }
