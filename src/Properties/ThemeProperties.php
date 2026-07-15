@@ -1,15 +1,27 @@
 <?php
+/**
+ * Properties implementation for themes.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
 namespace ThemeZee\Packable\Properties;
 
+/**
+ * Builds Properties from a theme's style.css headers.
+ */
 class ThemeProperties extends BaseProperties {
 
 	public const PROP_STATUS   = 'status';
 	public const PROP_TEMPLATE = 'template';
 
-	/** @see https://developer.wordpress.org/reference/classes/wp_theme/ */
+	/**
+	 * Theme header keys mapped to property keys.
+	 *
+	 * @see https://developer.wordpress.org/reference/classes/wp_theme/
+	 */
 	protected const HEADERS = array(
 		self::PROP_AUTHOR       => 'Author',
 		self::PROP_AUTHOR_URI   => 'AuthorURI',
@@ -22,14 +34,16 @@ class ThemeProperties extends BaseProperties {
 		self::PROP_REQUIRES_WP  => 'RequiresWP',
 		self::PROP_REQUIRES_PHP => 'RequiresPHP',
 
-		// additional headers
+		// additional headers.
 		self::PROP_STATUS       => 'Status',
 		self::PROP_TAGS         => 'Tags',
 		self::PROP_TEMPLATE     => 'Template',
 	);
 
 	/**
-	 * @param string $themeDirectory
+	 * Creates Properties from the given theme directory.
+	 *
+	 * @param string $themeDirectory Theme directory or stylesheet name.
 	 *
 	 * @return ThemeProperties
 	 */
@@ -38,7 +52,9 @@ class ThemeProperties extends BaseProperties {
 	}
 
 	/**
-	 * @param string $themeDirectory
+	 * Constructor.
+	 *
+	 * @param string $themeDirectory Theme directory or stylesheet name.
 	 */
 	protected function __construct( string $themeDirectory ) {
 		if ( ! function_exists( 'wp_get_theme' ) ) {
@@ -68,6 +84,8 @@ class ThemeProperties extends BaseProperties {
 	}
 
 	/**
+	 * Returns the theme status.
+	 *
 	 * @return string
 	 */
 	public function status(): string {
@@ -75,6 +93,8 @@ class ThemeProperties extends BaseProperties {
 	}
 
 	/**
+	 * Returns the parent theme template, when this is a child theme.
+	 *
 	 * @return string
 	 */
 	public function template(): string {
@@ -82,6 +102,8 @@ class ThemeProperties extends BaseProperties {
 	}
 
 	/**
+	 * Returns whether the theme is a child theme.
+	 *
 	 * @return bool
 	 */
 	public function isChildTheme(): bool {
@@ -89,6 +111,8 @@ class ThemeProperties extends BaseProperties {
 	}
 
 	/**
+	 * Returns whether the theme is the currently active theme.
+	 *
 	 * @return bool
 	 */
 	public function isCurrentTheme(): bool {
@@ -96,11 +120,13 @@ class ThemeProperties extends BaseProperties {
 	}
 
 	/**
+	 * Returns the parent theme's Properties, when this is a child theme.
+	 *
 	 * @return ThemeProperties|null
 	 */
 	public function parentThemeProperties(): ?ThemeProperties {
 		$template = $this->template();
-		if ( $template === '' ) {
+		if ( '' === $template ) {
 			return null;
 		}
 

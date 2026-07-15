@@ -1,4 +1,9 @@
 <?php
+/**
+ * Tests for ThemeProperties.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
@@ -9,9 +14,14 @@ use ThemeZee\Packable\Properties\Properties;
 use ThemeZee\Packable\Properties\ThemeProperties;
 use ThemeZee\Packable\Tests\TestCase;
 
+/**
+ * Tests building Properties from theme headers.
+ */
 class ThemePropertiesTest extends TestCase {
 
 	/**
+	 * Tests the basic theme properties.
+	 *
 	 * @test
 	 */
 	public function testBasic(): void {
@@ -84,13 +94,15 @@ class ThemePropertiesTest extends TestCase {
 		static::assertSame( '', $properties->template() );
 		static::assertSame( $expectedStatus, $properties->status() );
 
-		// API for Themes
+		// API for Themes.
 		static::assertFalse( $properties->isChildTheme() );
 		static::assertTrue( $properties->isCurrentTheme() );
 		static::assertNull( $properties->parentThemeProperties() );
 	}
 
 	/**
+	 * Tests child-theme detection and parent properties.
+	 *
 	 * @test
 	 */
 	public function testChildTheme(): void {

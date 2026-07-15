@@ -1,4 +1,9 @@
 <?php
+/**
+ * Main package class that bootstraps modules and the container.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
@@ -11,6 +16,9 @@ use ThemeZee\Packable\Module\ServiceModule;
 use ThemeZee\Packable\Properties\Properties;
 use Psr\Container\ContainerInterface;
 
+/**
+ * Manages modules, the service container and the build/boot lifecycle.
+ */
 class Package {
 
 	/**
@@ -157,21 +165,67 @@ class Package {
 		'!=' => '!=',
 	);
 
-	/** @var Package::STATUS_* */
+	/**
+	 * Current status of the package.
+	 *
+	 * @var Package::STATUS_*
+	 */
 	private int $status = self::STATUS_IDLE;
-	/** @var array<string, list<string>> */
+
+	/**
+	 * Recorded status per module, plus the aggregate list.
+	 *
+	 * @var array<string, list<string>>
+	 */
 	private array $moduleStatus = array( self::MODULES_ALL => array() );
-	/** @var list<ExecutableModule> */
+
+	/**
+	 * Executable modules collected to be run on boot.
+	 *
+	 * @var list<ExecutableModule>
+	 */
 	private array $executables = array();
+
+	/**
+	 * Package properties.
+	 *
+	 * @var Properties
+	 */
 	private Properties $properties;
+
+	/**
+	 * Configurator used to collect services and build the container.
+	 *
+	 * @var ContainerConfigurator
+	 */
 	private ContainerConfigurator $containerConfigurator;
-	private bool $built            = false;
-	private bool $hasContainer     = false;
+
+	/**
+	 * Whether build() has already been called.
+	 *
+	 * @var bool
+	 */
+	private bool $built = false;
+
+	/**
+	 * Whether the compiled container has been requested.
+	 *
+	 * @var bool
+	 */
+	private bool $hasContainer = false;
+
+	/**
+	 * Last caught error, when not in debug mode.
+	 *
+	 * @var \Throwable|null
+	 */
 	private ?\Throwable $lastError = null;
 
 	/**
-	 * @param Properties         $properties
-	 * @param ContainerInterface ...$containers
+	 * Creates a new package instance.
+	 *
+	 * @param Properties         $properties    Package properties.
+	 * @param ContainerInterface ...$containers Optional child containers to delegate to.
 	 * @return Package
 	 */
 	public static function new( Properties $properties, ContainerInterface ...$containers ): Package {
@@ -179,8 +233,10 @@ class Package {
 	}
 
 	/**
-	 * @param Properties         $properties
-	 * @param ContainerInterface ...$containers
+	 * Constructor.
+	 *
+	 * @param Properties         $properties    Package properties.
+	 * @param ContainerInterface ...$containers Optional child containers to delegate to.
 	 */
 	private function __construct( Properties $properties, ContainerInterface ...$containers ) {
 		$this->properties = $properties;
@@ -195,7 +251,9 @@ class Package {
 	}
 
 	/**
-	 * @param Module $module
+	 * Adds a module to the package.
+	 *
+	 * @param Module $module Module to add.
 	 * @return static
 	 */
 	public function addModule( Module $module ): Package {
@@ -210,7 +268,6 @@ class Package {
 			// ExecutableModules are collected and executed on Package::boot()
 			// when the Container is being compiled.
 			if ( $isExecutable ) {
-				/** @var ExecutableModule $module */
 				$this->executables[] = $module;
 			}
 
@@ -225,6 +282,8 @@ class Package {
 	}
 
 	/**
+	 * Runs the "build" phase, locking the container from further changes.
+	 *
 	 * @return static
 	 */
 	public function build(): Package {
@@ -260,6 +319,8 @@ class Package {
 	}
 
 	/**
+	 * Runs the "boot" phase, executing modules after building if needed.
+	 *
 	 * @return bool
 	 */
 	public function boot(): bool {
@@ -305,6 +366,8 @@ class Package {
 	}
 
 	/**
+	 * Calls build() when boot() is invoked before an explicit build.
+	 *
 	 * @return void
 	 */
 	private function doBuild(): void {
@@ -321,14 +384,15 @@ class Package {
 	}
 
 	/**
-	 * @param Module $module
+	 * Registers the services provided by a module, if any.
+	 *
+	 * @param Module $module Module to register services from.
 	 * @return bool
 	 */
 	private function addModuleServices( Module $module ): bool {
-		/** @var null|array<string, callable(ContainerInterface): mixed> $services */
 		$services = $module instanceof ServiceModule ? $module->services() : null;
 
-		if ( ( $services === null ) || ( $services === array() ) ) {
+		if ( ( null === $services ) || ( array() === $services ) ) {
 			return false;
 		}
 
@@ -344,6 +408,8 @@ class Package {
 	}
 
 	/**
+	 * Runs every collected executable module.
+	 *
 	 * @return void
 	 */
 	private function doExecute(): void {
@@ -357,9 +423,11 @@ class Package {
 	}
 
 	/**
-	 * @param string            $moduleId
-	 * @param string            $status
-	 * @param list<string>|null $serviceIds
+	 * Records the status reached by a module.
+	 *
+	 * @param string            $moduleId   Module id.
+	 * @param string            $status     Status constant reached.
+	 * @param list<string>|null $serviceIds Ids of the services involved, when debugging.
 	 * @return void
 	 */
 	private function moduleProgress(
@@ -373,7 +441,7 @@ class Package {
 		}
 		$this->moduleStatus[ $status ][] = $moduleId;
 
-		if ( ( $serviceIds === null ) || ( $serviceIds === array() ) || ! $this->properties->isDebug() ) {
+		if ( ( null === $serviceIds ) || ( array() === $serviceIds ) || ! $this->properties->isDebug() ) {
 			$this->moduleStatus[ self::MODULES_ALL ][] = "{$moduleId} {$status}";
 
 			return;
@@ -384,6 +452,8 @@ class Package {
 	}
 
 	/**
+	 * Returns the recorded status map for all modules.
+	 *
 	 * @return array<string, list<string>>
 	 */
 	public function modulesStatus(): array {
@@ -391,8 +461,10 @@ class Package {
 	}
 
 	/**
-	 * @param string $moduleId
-	 * @param string $status
+	 * Checks whether a module reached the given status.
+	 *
+	 * @param string $moduleId Module id.
+	 * @param string $status   Status constant to check.
 	 *
 	 * @return bool
 	 */
@@ -409,7 +481,7 @@ class Package {
 	 * If the plugin is in a sub-folder e.g. `my-plugin/index.php` the filter name will be:
 	 * `themezee.packable.my-plugin` anyway, so the file name is not relevant.
 	 *
-	 * @param string $suffix
+	 * @param string $suffix Optional hook suffix to append.
 	 * @return string
 	 *
 	 * @see Package::name()
@@ -425,6 +497,8 @@ class Package {
 	}
 
 	/**
+	 * Returns the package properties.
+	 *
 	 * @return Properties
 	 */
 	public function properties(): Properties {
@@ -432,6 +506,8 @@ class Package {
 	}
 
 	/**
+	 * Returns the compiled PSR-11 container.
+	 *
 	 * @return ContainerInterface
 	 */
 	public function container(): ContainerInterface {
@@ -442,6 +518,8 @@ class Package {
 	}
 
 	/**
+	 * Returns whether the compiled container has been requested.
+	 *
 	 * @return bool
 	 */
 	public function hasContainer(): bool {
@@ -449,6 +527,8 @@ class Package {
 	}
 
 	/**
+	 * Returns the package base name.
+	 *
 	 * @return string
 	 */
 	public function name(): string {
@@ -456,7 +536,9 @@ class Package {
 	}
 
 	/**
-	 * @param int $status
+	 * Checks whether the package is currently at the given status.
+	 *
+	 * @param int $status Status constant to check.
 	 * @return bool
 	 */
 	public function statusIs( int $status ): bool {
@@ -464,14 +546,18 @@ class Package {
 	}
 
 	/**
+	 * Returns whether the package is in a failed status.
+	 *
 	 * @return bool
 	 */
 	public function hasFailed(): bool {
-		return $this->status === self::STATUS_FAILED;
+		return self::STATUS_FAILED === $this->status;
 	}
 
 	/**
-	 * @param int $status
+	 * Checks whether the package has reached (or passed) the given status.
+	 *
+	 * @param int $status Status constant to check.
 	 * @return bool
 	 */
 	public function hasReachedStatus( int $status ): bool {
@@ -483,8 +569,10 @@ class Package {
 	}
 
 	/**
-	 * @param int                          $status
-	 * @param value-of<Package::OPERATORS> $operator
+	 * Compares the current status against the given one using an operator.
+	 *
+	 * @param int    $status   Status constant to compare against.
+	 * @param string $operator Comparison operator, one of self::OPERATORS.
 	 * @return bool
 	 */
 	private function checkStatus( int $status, string $operator = '==' ): bool {
@@ -494,29 +582,35 @@ class Package {
 	}
 
 	/**
-	 * @param Package::STATUS_* $status
+	 * Moves the package to the given status and fires the mapped hooks.
+	 *
+	 * @param int $status Status constant to move to.
+	 * @return void
 	 */
 	private function progress( int $status ): void {
 		$this->status = $status;
 
 		[$packageHookSuffix, $globalHook] = self::STATUSES_ACTIONS_MAP[ $status ] ?? array( null, null );
-		if ( $packageHookSuffix !== null ) {
+		if ( null !== $packageHookSuffix ) {
 			do_action( $this->hookName( $packageHookSuffix ), $this );
 		}
-		if ( $globalHook !== null ) {
+		if ( null !== $globalHook ) {
 			do_action( $globalHook, $this->name(), $this );
 		}
 	}
 
 	/**
-	 * @param \Throwable               $throwable
-	 * @param Package::ACTION_FAILED_* $action
+	 * Handles a caught error by firing the failure hook and, in debug, rethrowing.
+	 *
+	 * @param \Throwable $throwable Caught error.
+	 * @param string     $action    Failure action hook suffix.
 	 * @return void
+	 * @throws \Throwable Rethrown when the package is in debug mode.
 	 */
 	private function handleFailure( \Throwable $throwable, string $action ): void {
 		$this->progress( self::STATUS_FAILED );
 		$hook = $this->hookName( $action );
-		did_action( $hook ) or do_action( $hook, $throwable );
+		did_action( $hook ) || do_action( $hook, $throwable );
 
 		if ( $this->properties->isDebug() ) {
 			throw $throwable;
@@ -526,9 +620,13 @@ class Package {
 	}
 
 	/**
-	 * @param int                          $status
-	 * @param string                       $action
-	 * @param value-of<Package::OPERATORS> $operator
+	 * Asserts the current status satisfies the given comparison, throwing otherwise.
+	 *
+	 * @param int    $status   Status constant to compare against.
+	 * @param string $action   Human-readable action, used in the exception message.
+	 * @param string $operator Comparison operator, one of self::OPERATORS.
+	 * @return void
+	 * @throws \Exception When the status assertion fails.
 	 */
 	private function assertStatus( int $status, string $action, string $operator = '==' ): void {
 		if ( ! $this->checkStatus( $status, $operator ) ) {

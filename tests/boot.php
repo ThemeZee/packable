@@ -1,4 +1,9 @@
 <?php
+/**
+ * PHPUnit bootstrap file.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 

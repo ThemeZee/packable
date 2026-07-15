@@ -1,4 +1,9 @@
 <?php
+/**
+ * Read-only PSR-11 container compiled from registered services and child containers.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
@@ -7,18 +12,37 @@ namespace ThemeZee\Packable\Container;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+/**
+ * Resolves services once and delegates unknown ids to child containers.
+ */
 class ReadOnlyContainer implements ContainerInterface {
 
-	/** @var array<string, callable(ContainerInterface): mixed> */
+	/**
+	 * Service factories that have not been resolved yet, keyed by id.
+	 *
+	 * @var array<string, callable(ContainerInterface): mixed>
+	 */
 	private array $services;
-	/** @var ContainerInterface[] */
+
+	/**
+	 * Child containers to delegate lookups to.
+	 *
+	 * @var ContainerInterface[]
+	 */
 	private array $containers;
-	/** @var array<string, mixed> */
+
+	/**
+	 * Already resolved services, keyed by id.
+	 *
+	 * @var array<string, mixed>
+	 */
 	private array $resolvedServices = array();
 
 	/**
-	 * @param array<string, callable(ContainerInterface): mixed> $services
-	 * @param ContainerInterface[]                               $containers
+	 * Constructor.
+	 *
+	 * @param array<string, callable(ContainerInterface): mixed> $services   Service factories keyed by id.
+	 * @param ContainerInterface[]                               $containers Child containers to delegate to.
 	 */
 	public function __construct(
 		array $services,
@@ -30,8 +54,11 @@ class ReadOnlyContainer implements ContainerInterface {
 	}
 
 	/**
-	 * @param string $id
+	 * Resolves and returns the service registered under the given id.
+	 *
+	 * @param string $id Service id.
 	 * @return mixed
+	 * @throws NotFoundExceptionInterface When no service with the given id exists.
 	 */
 	public function get( string $id ) {
 		if ( array_key_exists( $id, $this->resolvedServices ) ) {
@@ -52,14 +79,18 @@ class ReadOnlyContainer implements ContainerInterface {
 			}
 		}
 
-		$error = "Service with ID {$id} not found.";
-		throw new class(esc_html( $error )) extends \Exception implements NotFoundExceptionInterface
+		$error     = "Service with ID {$id} not found.";
+		$exception = new class(esc_html( $error )) extends \Exception implements NotFoundExceptionInterface
 		{
 		};
+
+		throw $exception;
 	}
 
 	/**
-	 * @param string $id
+	 * Checks whether a service with the given id is available.
+	 *
+	 * @param string $id Service id.
 	 * @return bool
 	 */
 	public function has( string $id ): bool {

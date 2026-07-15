@@ -1,4 +1,9 @@
 <?php
+/**
+ * Tests for PluginProperties.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
@@ -9,9 +14,14 @@ use ThemeZee\Packable\Properties\PluginProperties;
 use ThemeZee\Packable\Properties\Properties;
 use ThemeZee\Packable\Tests\TestCase;
 
+/**
+ * Tests building Properties from plugin headers.
+ */
 class PluginPropertiesTest extends TestCase {
 
 	/**
+	 * Tests the basic plugin properties.
+	 *
 	 * @test
 	 */
 	public function testBasic(): void {
@@ -68,18 +78,20 @@ class PluginPropertiesTest extends TestCase {
 		static::assertSame( $expectedWpVersion, $properties->requiresWp() );
 		static::assertSame( $expectedPhpVersion, $properties->requiresPhp() );
 		static::assertSame( $expectedSanitizedBaseName, $properties->baseName() );
-		// Custom to Plugins
+		// Custom to Plugins.
 		static::assertSame( $expectedNetwork, $properties->network() );
 		static::assertSame( $expectedPluginMainFile, $properties->pluginMainFile() );
 	}
 
 	/**
+	 * Tests parsing of the RequiresPlugins header.
+	 *
 	 * @test
 	 * @runInSeparateProcess
 	 * @dataProvider provideRequiresPluginsData
 	 *
-	 * @param string   $requiresPlugins
-	 * @param string[] $expected
+	 * @param string   $requiresPlugins Raw RequiresPlugins header value.
+	 * @param string[] $expected        Expected parsed list.
 	 */
 	public function testRequiresPlugins( string $requiresPlugins, array $expected ): void {
 		$pluginMainFile   = '/app/wp-content/plugins/plugin-dir/plugin-name.php';
@@ -101,6 +113,8 @@ class PluginPropertiesTest extends TestCase {
 	}
 
 	/**
+	 * Provides RequiresPlugins header values and expected results.
+	 *
 	 * @return \Generator
 	 */
 	public static function provideRequiresPluginsData(): \Generator {
@@ -127,6 +141,8 @@ class PluginPropertiesTest extends TestCase {
 	}
 
 	/**
+	 * Tests the isActive() flag.
+	 *
 	 * @test
 	 */
 	public function testIsActive(): void {
@@ -153,6 +169,8 @@ class PluginPropertiesTest extends TestCase {
 	}
 
 	/**
+	 * Tests the isNetworkActive() flag.
+	 *
 	 * @test
 	 */
 	public function testIsNetworkActive(): void {
@@ -178,10 +196,12 @@ class PluginPropertiesTest extends TestCase {
 	}
 
 	/**
+	 * Tests that custom plugin headers are exposed as properties.
+	 *
 	 * @test
 	 * @dataProvider provideCustomHeaders
 	 *
-	 * @param array<string, string> $customHeaders
+	 * @param array<string, string> $customHeaders Custom headers to inject.
 	 */
 	public function testCustomPluginHeaders( array $customHeaders ): void {
 		$pluginMainFile            = '/app/wp-content/plugins/plugin-dir/plugin-name.php';
@@ -208,22 +228,22 @@ class PluginPropertiesTest extends TestCase {
 
 		$properties = PluginProperties::new( $pluginMainFile );
 
-		// Check if PluginProperties do behave as normal
+		// Check if PluginProperties do behave as normal.
 		static::assertSame( $expectedSanitizedBaseName, $properties->baseName() );
 		static::assertSame( $expectedBasePath, $properties->basePath() );
 
-		// Test default Headers
+		// Test default Headers.
 		static::assertSame( $expectedAuthor, $properties->author() );
 		static::assertSame( $expectedAuthor, $properties->get( Properties::PROP_AUTHOR ) );
 		static::assertSame( $expectedAuthorUri, $properties->authorUri() );
 		static::assertSame( $expectedAuthorUri, $properties->get( Properties::PROP_AUTHOR_URI ) );
 
-		// Test headers from get_plugin_data() are removed from properties
-		// "Author" will be mapped to Properties::PROP_AUTHOR
+		// Test headers from get_plugin_data() are removed from properties.
+		// "Author" will be mapped to Properties::PROP_AUTHOR.
 		static::assertFalse( $properties->has( 'Author' ) );
 		static::assertFalse( $properties->has( 'AuthorURI' ) );
 
-		// Test custom Headers
+		// Test custom Headers.
 		foreach ( $customHeaders as $key => $value ) {
 			static::assertTrue( $properties->has( $key ) );
 			static::assertSame( $value, $properties->get( $key ) );
@@ -231,6 +251,8 @@ class PluginPropertiesTest extends TestCase {
 	}
 
 	/**
+	 * Provides sets of custom plugin headers.
+	 *
 	 * @return \Generator
 	 */
 	public function provideCustomHeaders(): \Generator {
@@ -250,13 +272,15 @@ class PluginPropertiesTest extends TestCase {
 	}
 
 	/**
+	 * Tests must-use plugin detection.
+	 *
 	 * @test
 	 * @runInSeparateProcess
 	 * @dataProvider provideIsMuPluginData
 	 *
-	 * @param string $pluginMainFile
-	 * @param string $muPluginDir
-	 * @param bool   $expected
+	 * @param string $pluginMainFile Absolute path to the plugin main file.
+	 * @param string $muPluginDir    Must-use plugin directory.
+	 * @param bool   $expected       Expected must-use result.
 	 */
 	public function testIsMuPlugin( string $pluginMainFile, string $muPluginDir, bool $expected ): void {
 		$expectedBaseName = 'the-plugin/index.php';
@@ -275,6 +299,8 @@ class PluginPropertiesTest extends TestCase {
 	}
 
 	/**
+	 * Provides plugin paths and expected must-use results.
+	 *
 	 * @return \Generator
 	 */
 	public static function provideIsMuPluginData(): \Generator {

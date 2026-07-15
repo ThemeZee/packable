@@ -1,4 +1,9 @@
 <?php
+/**
+ * Module interface for modules that register services.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 

@@ -1,4 +1,9 @@
 <?php
+/**
+ * Tests for ReadOnlyContainer.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
@@ -9,9 +14,14 @@ use ThemeZee\Packable\Tests\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+/**
+ * Tests service resolution and delegation of the read-only container.
+ */
 class ReadOnlyContainerTest extends TestCase {
 
 	/**
+	 * Tests the empty container basics.
+	 *
 	 * @test
 	 */
 	public function testBasic(): void {
@@ -22,6 +32,8 @@ class ReadOnlyContainerTest extends TestCase {
 	}
 
 	/**
+	 * Tests that getting an unknown service throws.
+	 *
 	 * @test
 	 */
 	public function testGetUnknown(): void {
@@ -32,26 +44,30 @@ class ReadOnlyContainerTest extends TestCase {
 	}
 
 	/**
+	 * Tests has() and get() for a registered service.
+	 *
 	 * @test
 	 * @dataProvider provideServices
 	 *
-	 * @param mixed    $expected
-	 * @param callable $service
+	 * @param mixed    $expected Expected resolved value.
+	 * @param callable $service  Service factory.
 	 */
 	public function testHasGetService( $expected, callable $service ): void {
 		$expectedId = 'service';
 		$services   = array( $expectedId => $service );
 		$testee     = $this->factoryContainer( $services );
 
-		// check in Services
+		// check in Services.
 		static::assertTrue( $testee->has( $expectedId ) );
-		// resolve Service
+		// resolve Service.
 		static::assertSame( $expected, $testee->get( $expectedId ) );
-		// check in resolved Services
+		// check in resolved Services.
 		static::assertTrue( $testee->has( $expectedId ) );
 	}
 
 	/**
+	 * Provides services of different value types.
+	 *
 	 * @return \Generator
 	 */
 	public static function provideServices(): \Generator {
@@ -81,6 +97,8 @@ class ReadOnlyContainerTest extends TestCase {
 	}
 
 	/**
+	 * Tests resolving a service from a child container.
+	 *
 	 * @test
 	 */
 	public function testHasGetServiceFromChildContainer(): void {
@@ -88,17 +106,39 @@ class ReadOnlyContainerTest extends TestCase {
 		$expectedValue = new \stdClass();
 
 		$childContainer = new class($expectedKey, $expectedValue) implements ContainerInterface {
-			/** @var array<string, \stdClass> */
+			/**
+			 * Values keyed by id.
+			 *
+			 * @var array<string, \stdClass>
+			 */
 			private array $data = array();
 
+			/**
+			 * Constructor.
+			 *
+			 * @param string    $key   Value id.
+			 * @param \stdClass $value Value to store.
+			 */
 			public function __construct( string $key, \stdClass $value ) {
 				$this->data[ $key ] = $value;
 			}
 
+			/**
+			 * Returns the value for the given id.
+			 *
+			 * @param string $id Value id.
+			 * @return mixed
+			 */
 			public function get( string $id ) {
 				return $this->data[ $id ];
 			}
 
+			/**
+			 * Returns whether a value with the given id exists.
+			 *
+			 * @param string $id Value id.
+			 * @return bool
+			 */
 			public function has( string $id ): bool {
 				return isset( $this->data[ $id ] );
 			}
@@ -106,15 +146,17 @@ class ReadOnlyContainerTest extends TestCase {
 
 		$testee = $this->factoryContainer( array(), array( $childContainer ) );
 
-		// check in child Container
+		// check in child Container.
 		static::assertTrue( $testee->has( $expectedKey ) );
-		// resolve Service
+		// resolve Service.
 		static::assertSame( $expectedValue, $testee->get( $expectedKey ) );
-		// check in resolved Services
+		// check in resolved Services.
 		static::assertTrue( $testee->has( $expectedKey ) );
 	}
 
 	/**
+	 * Tests that resolved services are cached and reused.
+	 *
 	 * @test
 	 */
 	public function testServicesAreCached(): void {
@@ -122,8 +164,18 @@ class ReadOnlyContainerTest extends TestCase {
 		$services           = array(
 			$expectedServiceKey => function (): object {
 				return new class() {
+					/**
+					 * Number of times count() was called.
+					 *
+					 * @var int
+					 */
 					protected int $serviceCounter = 0;
 
+					/**
+					 * Increments and returns the call counter.
+					 *
+					 * @return int
+					 */
 					public function count(): int {
 						++$this->serviceCounter;
 
@@ -141,8 +193,10 @@ class ReadOnlyContainerTest extends TestCase {
 	}
 
 	/**
-	 * @param array<string, callable(ContainerInterface): mixed> $services
-	 * @param ContainerInterface[]                               $containers
+	 * Builds a read-only container for testing.
+	 *
+	 * @param array<string, callable(ContainerInterface): mixed> $services   Service factories keyed by id.
+	 * @param ContainerInterface[]                               $containers Child containers to delegate to.
 	 *
 	 * @return Container
 	 */

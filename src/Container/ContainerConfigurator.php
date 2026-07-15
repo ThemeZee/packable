@@ -1,4 +1,9 @@
 <?php
+/**
+ * Configures and compiles the read-only container.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
@@ -6,23 +11,45 @@ namespace ThemeZee\Packable\Container;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * Collects services and child containers and builds the compiled container.
+ */
 class ContainerConfigurator {
 
-	/** @var array<string, callable(ContainerInterface): mixed> */
-	private array $services                        = array();
+	/**
+	 * Registered service factories, keyed by id.
+	 *
+	 * @var array<string, callable(ContainerInterface): mixed>
+	 */
+	private array $services = array();
+
+	/**
+	 * Compiled container, created lazily.
+	 *
+	 * @var ContainerInterface|null
+	 */
 	private ?ContainerInterface $compiledContainer = null;
-	/** @var ContainerInterface[] */
+
+	/**
+	 * Child containers to delegate lookups to.
+	 *
+	 * @var ContainerInterface[]
+	 */
 	private array $containers = array();
 
 	/**
-	 * @param ContainerInterface[] $containers
+	 * Constructor.
+	 *
+	 * @param ContainerInterface[] $containers Child containers to delegate to.
 	 */
 	public function __construct( array $containers = array() ) {
 		array_map( array( $this, 'addContainer' ), $containers );
 	}
 
 	/**
-	 * @param ContainerInterface $container
+	 * Adds a child container to delegate lookups to.
+	 *
+	 * @param ContainerInterface $container Container to add.
 	 * @return void
 	 */
 	public function addContainer( ContainerInterface $container ): void {
@@ -30,8 +57,10 @@ class ContainerConfigurator {
 	}
 
 	/**
-	 * @param string                              $id
-	 * @param callable(ContainerInterface): mixed $service
+	 * Registers a service factory under the given id.
+	 *
+	 * @param string                              $id      Service id.
+	 * @param callable(ContainerInterface): mixed $service Factory callback.
 	 * @return void
 	 */
 	public function addService( string $id, callable $service ): void {
@@ -45,7 +74,9 @@ class ContainerConfigurator {
 	}
 
 	/**
-	 * @param string $id
+	 * Checks whether a service with the given id is available.
+	 *
+	 * @param string $id Service id.
 	 * @return bool
 	 */
 	public function hasService( string $id ): bool {
@@ -63,10 +94,12 @@ class ContainerConfigurator {
 	}
 
 	/**
+	 * Builds (once) and returns the compiled read-only container.
+	 *
 	 * @return ContainerInterface
 	 */
 	public function createReadOnlyContainer(): ContainerInterface {
-		if ( $this->compiledContainer === null ) {
+		if ( null === $this->compiledContainer ) {
 			$this->compiledContainer = new ReadOnlyContainer(
 				$this->services,
 				$this->containers

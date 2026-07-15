@@ -1,16 +1,26 @@
 <?php
+/**
+ * Properties implementation for plugins.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
 namespace ThemeZee\Packable\Properties;
 
+/**
+ * Builds Properties from a plugin's file headers.
+ */
 class PluginProperties extends BaseProperties {
 
-	// Custom properties for Plugins
+	// Custom properties for Plugins.
 	public const PROP_NETWORK          = 'network';
 	public const PROP_REQUIRES_PLUGINS = 'requiresPlugins';
 
 	/**
+	 * Plugin header keys mapped to property keys.
+	 *
 	 * @see https://developer.wordpress.org/reference/functions/get_plugin_data/
 	 */
 	protected const HEADERS = array(
@@ -25,19 +35,50 @@ class PluginProperties extends BaseProperties {
 		self::PROP_REQUIRES_WP      => 'RequiresWP',
 		self::PROP_REQUIRES_PHP     => 'RequiresPHP',
 
-		// additional headers
+		// additional headers.
 		self::PROP_NETWORK          => 'Network',
 		self::PROP_REQUIRES_PLUGINS => 'RequiresPlugins',
 	);
 
+	/**
+	 * Absolute path to the plugin main file.
+	 *
+	 * @var string
+	 */
 	private string $pluginMainFile;
+
+	/**
+	 * Plugin base name.
+	 *
+	 * @var string
+	 */
 	private string $pluginBaseName;
-	protected ?bool $isMu            = null;
-	protected ?bool $isActive        = null;
+
+	/**
+	 * Cached must-use flag.
+	 *
+	 * @var bool|null
+	 */
+	protected ?bool $isMu = null;
+
+	/**
+	 * Cached active flag.
+	 *
+	 * @var bool|null
+	 */
+	protected ?bool $isActive = null;
+
+	/**
+	 * Cached network-active flag.
+	 *
+	 * @var bool|null
+	 */
 	protected ?bool $isNetworkActive = null;
 
 	/**
-	 * @param string $pluginMainFile
+	 * Creates Properties from the given plugin main file.
+	 *
+	 * @param string $pluginMainFile Absolute path to the plugin main file.
 	 * @return PluginProperties
 	 */
 	public static function new( string $pluginMainFile ): PluginProperties {
@@ -45,7 +86,9 @@ class PluginProperties extends BaseProperties {
 	}
 
 	/**
-	 * @param string $pluginMainFile
+	 * Constructor.
+	 *
+	 * @param string $pluginMainFile Absolute path to the plugin main file.
 	 */
 	protected function __construct( string $pluginMainFile ) {
 		if ( ! function_exists( 'get_plugin_data' ) ) {
@@ -64,7 +107,6 @@ class PluginProperties extends BaseProperties {
 			$properties[ $key ] = $pluginData[ $pluginDataKey ] ?? '';
 			unset( $pluginData[ $pluginDataKey ] );
 		}
-		/** @var array<string, mixed> $properties */
 		$properties = array_merge( $properties, $pluginData );
 
 		$this->pluginMainFile = wp_normalize_path( $pluginMainFile );
@@ -82,6 +124,8 @@ class PluginProperties extends BaseProperties {
 	}
 
 	/**
+	 * Returns the absolute path to the plugin main file.
+	 *
 	 * @return string
 	 */
 	public function pluginMainFile(): string {
@@ -89,6 +133,8 @@ class PluginProperties extends BaseProperties {
 	}
 
 	/**
+	 * Returns whether the plugin is network-only.
+	 *
 	 * @return bool
 	 */
 	public function network(): bool {
@@ -96,6 +142,8 @@ class PluginProperties extends BaseProperties {
 	}
 
 	/**
+	 * Returns the list of required plugins.
+	 *
 	 * @return string[]
 	 */
 	public function requiresPlugins(): array {
@@ -105,10 +153,12 @@ class PluginProperties extends BaseProperties {
 	}
 
 	/**
+	 * Returns whether the plugin is active.
+	 *
 	 * @return bool
 	 */
 	public function isActive(): bool {
-		if ( $this->isActive === null ) {
+		if ( null === $this->isActive ) {
 			if ( ! function_exists( 'is_plugin_active' ) ) {
 				require_once ABSPATH . 'wp-admin/includes/plugin.php';
 			}
@@ -119,10 +169,12 @@ class PluginProperties extends BaseProperties {
 	}
 
 	/**
+	 * Returns whether the plugin is network active.
+	 *
 	 * @return bool
 	 */
 	public function isNetworkActive(): bool {
-		if ( $this->isNetworkActive === null ) {
+		if ( null === $this->isNetworkActive ) {
 			if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
 				require_once ABSPATH . 'wp-admin/includes/plugin.php';
 			}
@@ -133,12 +185,14 @@ class PluginProperties extends BaseProperties {
 	}
 
 	/**
+	 * Returns whether the plugin is a must-use plugin.
+	 *
 	 * @return bool
 	 */
 	public function isMuPlugin(): bool {
-		if ( $this->isMu === null ) {
+		if ( null === $this->isMu ) {
 			$muPluginDir = wp_normalize_path( WPMU_PLUGIN_DIR );
-			$this->isMu  = strpos( $this->pluginMainFile, $muPluginDir ) === 0;
+			$this->isMu  = 0 === strpos( $this->pluginMainFile, $muPluginDir );
 		}
 
 		return $this->isMu;

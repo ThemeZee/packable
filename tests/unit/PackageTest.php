@@ -1,4 +1,9 @@
 <?php
+/**
+ * Tests for the Package class.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
@@ -12,9 +17,14 @@ use ThemeZee\Packable\Properties\Properties;
 use ThemeZee\Packable\Tests\TestCase;
 use Psr\Container\ContainerInterface;
 
+/**
+ * Tests the package build/boot lifecycle and module handling.
+ */
 class PackageTest extends TestCase {
 
 	/**
+	 * Tests the full lifecycle of a basic package.
+	 *
 	 * @test
 	 */
 	public function testBasic(): void {
@@ -63,12 +73,14 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests hook name generation.
+	 *
 	 * @test
 	 * @dataProvider provideHookNameSuffix
 	 *
-	 * @param string $suffix
-	 * @param string $baseName
-	 * @param string $expectedHookName
+	 * @param string $suffix           Hook suffix.
+	 * @param string $baseName         Package base name.
+	 * @param string $expectedHookName Expected generated hook name.
 	 */
 	public function testHookName( string $suffix, string $baseName, string $expectedHookName ): void {
 		$propertiesStub = $this->stubProperties( $baseName );
@@ -77,6 +89,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Provides hook suffixes and expected hook names.
+	 *
 	 * @return \Generator
 	 */
 	public static function provideHookNameSuffix(): \Generator {
@@ -108,6 +122,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests booting with a module that registers nothing.
+	 *
 	 * @test
 	 */
 	public function testBootWithEmptyModule(): void {
@@ -124,12 +140,14 @@ class PackageTest extends TestCase {
 		static::assertFalse( $package->moduleIs( $expectedId, Package::MODULE_REGISTERED ) );
 		static::assertFalse( $package->moduleIs( $expectedId, Package::MODULE_ADDED ) );
 
-		// booting again return false, but we expect no breakage
+		// booting again return false, but we expect no breakage.
 		static::assertFalse( $package->boot() );
 		static::assertTrue( $package->statusIs( Package::STATUS_DONE ) );
 	}
 
 	/**
+	 * Tests building with a module that registers nothing.
+	 *
 	 * @test
 	 */
 	public function testBuildWithEmptyModule(): void {
@@ -146,12 +164,14 @@ class PackageTest extends TestCase {
 		static::assertFalse( $package->moduleIs( $expectedId, Package::MODULE_REGISTERED ) );
 		static::assertFalse( $package->moduleIs( $expectedId, Package::MODULE_ADDED ) );
 
-		// building again we expect no breakage
+		// building again we expect no breakage.
 		$package->build()->build();
 		static::assertTrue( $package->statusIs( Package::STATUS_INITIALIZED ) );
 	}
 
 	/**
+	 * Tests booting with a service module.
+	 *
 	 * @test
 	 */
 	public function testBootWithServiceModule(): void {
@@ -169,6 +189,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests building with a service module.
+	 *
 	 * @test
 	 */
 	public function testBuildWithServiceModule(): void {
@@ -186,6 +208,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests booting runs an executable module.
+	 *
 	 * @test
 	 */
 	public function testBootWithExecutableModule(): void {
@@ -203,6 +227,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests building does not yet run an executable module.
+	 *
 	 * @test
 	 */
 	public function testBuildWithExecutableModule(): void {
@@ -238,6 +264,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests that adding a module after build fails.
+	 *
 	 * @test
 	 */
 	public function testAddModuleFailsAfterBuild(): void {
@@ -249,15 +277,27 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests that services are resolved from the compiled container.
+	 *
 	 * @test
 	 */
 	public function testBuildResolveServices(): void {
 		$module = new class() implements ServiceModule, ExecutableModule
 		{
+			/**
+			 * Returns the module id.
+			 *
+			 * @return string
+			 */
 			public function id(): string {
 				return 'test-module';
 			}
 
+			/**
+			 * Returns the module services.
+			 *
+			 * @return array<string, callable>
+			 */
 			public function services(): array {
 				return array(
 					'dependency' => static function (): object {
@@ -268,6 +308,11 @@ class PackageTest extends TestCase {
 
 						return new class(array( 'works?' => $works )) extends \ArrayObject
 						{
+							/**
+							 * Returns the injected "works?" value.
+							 *
+							 * @return string
+							 */
 							public function works(): string {
 								return (string) $this->offsetGet( 'works?' );
 							}
@@ -276,9 +321,18 @@ class PackageTest extends TestCase {
 				);
 			}
 
+			// phpcs:disable Squiz.Commenting.FunctionComment.InvalidNoReturn -- Always throws to prove it is never executed.
+			/**
+			 * Runs the module.
+			 *
+			 * @param ContainerInterface $container Compiled container.
+			 * @return bool
+			 * @throws \Error Always, to prove the module is not executed.
+			 */
 			public function run( ContainerInterface $container ): bool {
 				throw new \Error( 'This should not run!' );
 			}
+			// phpcs:enable Squiz.Commenting.FunctionComment.InvalidNoReturn
 		};
 
 		$actual = Package::new( $this->stubProperties() )
@@ -292,6 +346,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests the hooks fired during boot.
+	 *
 	 * @test
 	 */
 	public function testBootFireHooks(): void {
@@ -442,6 +498,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests that calling boot() from the init hook fails (debug off).
+	 *
 	 * @test
 	 */
 	public function testItFailsWhenCallingBootFromInitHookDebugOff(): void {
@@ -461,6 +519,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests that calling boot() from the init hook fails (debug on).
+	 *
 	 * @test
 	 */
 	public function testItFailsWhenCallingBootFromInitHookDebugOn(): void {
@@ -481,6 +541,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests that calling boot() from the initialized hook fails.
+	 *
 	 * @test
 	 */
 	public function testItFailsWhenCallingBootFromInitializedHook(): void {
@@ -501,6 +563,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests that calling boot() from the ready hook fails.
+	 *
 	 * @test
 	 */
 	public function testItFailsWhenCallingBootFromReadyHook(): void {
@@ -521,6 +585,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests that calling build() from the init hook fails.
+	 *
 	 * @test
 	 */
 	public function testItFailsWhenCallingBuildFromInitHook(): void {
@@ -541,6 +607,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests that calling build() from the initialized hook fails.
+	 *
 	 * @test
 	 */
 	public function testItFailsWhenCallingBuildFromInitializedHook(): void {
@@ -561,6 +629,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests that calling build() from the ready hook fails.
+	 *
 	 * @test
 	 */
 	public function testItFailsWhenCallingBuildFromReadyHook(): void {
@@ -581,6 +651,8 @@ class PackageTest extends TestCase {
 	}
 
 	/**
+	 * Tests that properties can be retrieved from the container.
+	 *
 	 * @test
 	 */
 	public function testPropertiesCanBeRetrievedFromContainer(): void {

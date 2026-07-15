@@ -1,23 +1,61 @@
 <?php
+/**
+ * Base implementation of the Properties interface.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
 namespace ThemeZee\Packable\Properties;
 
+/**
+ * Shared Properties implementation backed by an array of values.
+ */
 class BaseProperties implements Properties {
 
+	/**
+	 * Cached debug flag.
+	 *
+	 * @var bool|null
+	 */
 	protected ?bool $isDebug = null;
+
+	/**
+	 * Base name.
+	 *
+	 * @var string
+	 */
 	protected string $baseName;
+
+	/**
+	 * Base path.
+	 *
+	 * @var string
+	 */
 	protected string $basePath;
+
+	/**
+	 * Base URL, when known.
+	 *
+	 * @var string|null
+	 */
 	protected ?string $baseUrl;
-	/** @var array<string, mixed> */
+
+	/**
+	 * Property values, keyed by property key.
+	 *
+	 * @var array<string, mixed>
+	 */
 	protected array $properties;
 
 	/**
-	 * @param string               $baseName
-	 * @param string               $basePath
-	 * @param string|null          $baseUrl
-	 * @param array<string, mixed> $properties
+	 * Constructor.
+	 *
+	 * @param string               $baseName   Base name.
+	 * @param string               $basePath   Base path.
+	 * @param string|null          $baseUrl    Base URL, when known.
+	 * @param array<string, mixed> $properties Property values.
 	 */
 	protected function __construct(
 		string $baseName,
@@ -28,7 +66,7 @@ class BaseProperties implements Properties {
 
 		$baseName = $this->sanitizeBaseName( $baseName );
 		$basePath = trailingslashit( $basePath );
-		if ( $baseUrl !== null ) {
+		if ( null !== $baseUrl ) {
 			$baseUrl = trailingslashit( $baseUrl );
 		}
 
@@ -39,7 +77,9 @@ class BaseProperties implements Properties {
 	}
 
 	/**
-	 * @param string $name
+	 * Normalises a raw base name to a lowercase file name.
+	 *
+	 * @param string $name Raw base name.
 	 *
 	 * @return lowercase-string
 	 */
@@ -52,6 +92,8 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns the base name.
+	 *
 	 * @return string
 	 */
 	public function baseName(): string {
@@ -59,6 +101,8 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns the base path.
+	 *
 	 * @return string
 	 */
 	public function basePath(): string {
@@ -66,6 +110,8 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns the base URL, when known.
+	 *
 	 * @return string|null
 	 */
 	public function baseUrl(): ?string {
@@ -73,6 +119,8 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns the author.
+	 *
 	 * @return string
 	 */
 	public function author(): string {
@@ -80,6 +128,8 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns the author URI.
+	 *
 	 * @return string
 	 */
 	public function authorUri(): string {
@@ -87,6 +137,8 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns the description.
+	 *
 	 * @return string
 	 */
 	public function description(): string {
@@ -94,6 +146,8 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns the text domain.
+	 *
 	 * @return string
 	 */
 	public function textDomain(): string {
@@ -101,6 +155,8 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns the domain path.
+	 *
 	 * @return string
 	 */
 	public function domainPath(): string {
@@ -108,6 +164,8 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns the name.
+	 *
 	 * @return string
 	 */
 	public function name(): string {
@@ -115,6 +173,8 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns the home page URI.
+	 *
 	 * @return string
 	 */
 	public function uri(): string {
@@ -122,6 +182,8 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns the version.
+	 *
 	 * @return string
 	 */
 	public function version(): string {
@@ -129,28 +191,34 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns the minimum required WordPress version, when set.
+	 *
 	 * @return string|null
 	 */
 	public function requiresWp(): ?string {
 		$value = $this->get( self::PROP_REQUIRES_WP );
 
-		return ( ( $value !== '' ) && is_string( $value ) )
+		return ( ( '' !== $value ) && is_string( $value ) )
 			? $value
 			: null;
 	}
 
 	/**
+	 * Returns the minimum required PHP version, when set.
+	 *
 	 * @return string|null
 	 */
 	public function requiresPhp(): ?string {
 		$value = $this->get( self::PROP_REQUIRES_PHP );
 
-		return ( ( $value !== '' ) && is_string( $value ) )
+		return ( ( '' !== $value ) && is_string( $value ) )
 			? $value
 			: null;
 	}
 
 	/**
+	 * Returns the tags/keywords.
+	 *
 	 * @return string[]
 	 */
 	public function tags(): array {
@@ -158,17 +226,21 @@ class BaseProperties implements Properties {
 	}
 
 	/**
-	 * @param string $key
-	 * @param mixed  $default
+	 * Returns the value for the given property key.
+	 *
+	 * @param string $key      Property key.
+	 * @param mixed  $fallback Value returned when the key is not set.
 	 *
 	 * @return mixed
 	 */
-	public function get( string $key, $default = null ) {
-		return $this->properties[ $key ] ?? $default;
+	public function get( string $key, $fallback = null ) {
+		return $this->properties[ $key ] ?? $fallback;
 	}
 
 	/**
-	 * @param string $key
+	 * Returns whether the given property key is set.
+	 *
+	 * @param string $key Property key.
 	 *
 	 * @return bool
 	 */
@@ -177,11 +249,13 @@ class BaseProperties implements Properties {
 	}
 
 	/**
+	 * Returns whether the application is in debug mode.
+	 *
 	 * @return bool
 	 * @see Properties::isDebug()
 	 */
 	public function isDebug(): bool {
-		if ( $this->isDebug === null ) {
+		if ( null === $this->isDebug ) {
 			$this->isDebug = defined( 'WP_DEBUG' ) && WP_DEBUG;
 		}
 

@@ -1,4 +1,9 @@
 <?php
+/**
+ * Properties interface.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
@@ -33,59 +38,81 @@ interface Properties {
 	);
 
 	/**
-	 * @param string $key
-	 * @param mixed  $default
+	 * Returns the value for the given property key.
+	 *
+	 * @param string $key      Property key.
+	 * @param mixed  $fallback Value returned when the key is not set.
 	 * @return mixed
 	 */
-	public function get( string $key, $default = null );
+	public function get( string $key, $fallback = null );
 
 	/**
-	 * @param string $key
+	 * Returns whether the given property key is set.
+	 *
+	 * @param string $key Property key.
 	 * @return bool
 	 */
 	public function has( string $key ): bool;
 
 	/**
+	 * Returns whether the application is in debug mode.
+	 *
 	 * @return bool
 	 */
 	public function isDebug(): bool;
 
 	/**
+	 * Returns the base name.
+	 *
 	 * @return string
 	 */
 	public function baseName(): string;
 
 	/**
+	 * Returns the base path.
+	 *
 	 * @return string
 	 */
 	public function basePath(): string;
 
 	/**
+	 * Returns the base URL, when known.
+	 *
 	 * @return string|null
 	 */
 	public function baseUrl(): ?string;
 
 	/**
+	 * Returns the author.
+	 *
 	 * @return string
 	 */
 	public function author(): string;
 
 	/**
+	 * Returns the author URI.
+	 *
 	 * @return string
 	 */
 	public function authorUri(): string;
 
 	/**
+	 * Returns the description.
+	 *
 	 * @return string
 	 */
 	public function description(): string;
 
 	/**
+	 * Returns the text domain.
+	 *
 	 * @return string
 	 */
 	public function textDomain(): string;
 
 	/**
+	 * Returns the domain path.
+	 *
 	 * @return string
 	 */
 	public function domainPath(): string;
@@ -105,6 +132,8 @@ interface Properties {
 	public function uri(): string;
 
 	/**
+	 * Returns the version.
+	 *
 	 * @return string
 	 */
 	public function version(): string;

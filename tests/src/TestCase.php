@@ -1,4 +1,9 @@
 <?php
+/**
+ * Base test case with shared stubs and helpers.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
@@ -15,11 +20,16 @@ use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase as FrameworkTestCase;
 use Psr\Container\ContainerInterface;
 
+/**
+ * Shared base test case for the package test suite.
+ */
 abstract class TestCase extends FrameworkTestCase {
 
 	use MockeryPHPUnitIntegration;
 
 	/**
+	 * Sets up Brain Monkey before each test.
+	 *
 	 * @return void
 	 */
 	protected function setUp(): void {
@@ -29,6 +39,8 @@ abstract class TestCase extends FrameworkTestCase {
 	}
 
 	/**
+	 * Tears down Brain Monkey after each test.
+	 *
 	 * @return void
 	 */
 	protected function tearDown(): void {
@@ -37,8 +49,10 @@ abstract class TestCase extends FrameworkTestCase {
 	}
 
 	/**
-	 * @param string $basename
-	 * @param bool   $isDebug
+	 * Returns a stubbed Properties instance.
+	 *
+	 * @param string $basename Base name to return.
+	 * @param bool   $isDebug  Debug flag to return.
 	 *
 	 * @return Properties|MockInterface
 	 */
@@ -55,8 +69,10 @@ abstract class TestCase extends FrameworkTestCase {
 	}
 
 	/**
-	 * @param string       $id
-	 * @param class-string ...$interfaces
+	 * Returns a stubbed module implementing the given interfaces.
+	 *
+	 * @param string       $id            Module id to return.
+	 * @param class-string ...$interfaces Extra interfaces the module should implement.
 	 *
 	 * @return Module|MockInterface
 	 */
@@ -76,8 +92,10 @@ abstract class TestCase extends FrameworkTestCase {
 	}
 
 	/**
-	 * @param string $suffix
-	 * @param bool   $debug
+	 * Returns a package with a single service module already added.
+	 *
+	 * @param string $suffix Suffix used for module, service and package names.
+	 * @param bool   $debug  Debug flag for the package properties.
 	 *
 	 * @return Package
 	 */
@@ -90,7 +108,9 @@ abstract class TestCase extends FrameworkTestCase {
 	}
 
 	/**
-	 * @param string ...$ids
+	 * Returns a map of service factories for the given ids.
+	 *
+	 * @param string ...$ids Service ids to create factories for.
 	 *
 	 * @return array<string, callable>
 	 */
@@ -106,21 +126,37 @@ abstract class TestCase extends FrameworkTestCase {
 	}
 
 	/**
-	 * @param string ...$ids
+	 * Returns a simple PSR-11 container backed by service factories.
+	 *
+	 * @param string ...$ids Service ids the container should provide.
 	 *
 	 * @return ContainerInterface
 	 */
 	protected function stubContainer( string ...$ids ): ContainerInterface {
 		return new class($this->stubServices( ...$ids )) implements ContainerInterface {
-			/** @var array<string, callable> */
+			/**
+			 * Service factories, keyed by id.
+			 *
+			 * @var array<string, callable>
+			 */
 			private array $services;
 
-			/** @param array<string, callable> $services */
+			/**
+			 * Constructor.
+			 *
+			 * @param array<string, callable> $services Service factories keyed by id.
+			 */
 			public function __construct( array $services ) {
 				$this->services = $services;
 			}
 
-			/** @return mixed */
+			/**
+			 * Resolves and returns the service for the given id.
+			 *
+			 * @param string $id Service id.
+			 * @return mixed
+			 * @throws \Exception When the service is not found.
+			 */
 			public function get( string $id ) {
 				if ( ! isset( $this->services[ $id ] ) ) {
 					throw new \Exception( "Service {$id} not found." );
@@ -129,6 +165,12 @@ abstract class TestCase extends FrameworkTestCase {
 				return $this->services[ $id ]( $this );
 			}
 
+			/**
+			 * Returns whether a service with the given id exists.
+			 *
+			 * @param string $id Service id.
+			 * @return bool
+			 */
 			public function has( string $id ): bool {
 				return isset( $this->services[ $id ] );
 			}
@@ -136,8 +178,10 @@ abstract class TestCase extends FrameworkTestCase {
 	}
 
 	/**
-	 * @param \Throwable $throwable
-	 * @param string     $pattern
+	 * Asserts a throwable's message matches the given pattern.
+	 *
+	 * @param \Throwable $throwable Throwable to inspect.
+	 * @param string     $pattern   Regex pattern (without delimiters).
 	 *
 	 * @return void
 	 */

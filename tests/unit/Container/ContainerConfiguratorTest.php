@@ -1,4 +1,9 @@
 <?php
+/**
+ * Tests for ContainerConfigurator.
+ *
+ * @package ThemeZee\Packable
+ */
 
 declare(strict_types=1);
 
@@ -8,9 +13,14 @@ use ThemeZee\Packable\Container\ContainerConfigurator;
 use ThemeZee\Packable\Tests\TestCase;
 use Psr\Container\ContainerInterface;
 
+/**
+ * Tests registering services and building the container.
+ */
 class ContainerConfiguratorTest extends TestCase {
 
 	/**
+	 * Tests the configurator basics.
+	 *
 	 * @test
 	 */
 	public function testBasic(): void {
@@ -22,6 +32,8 @@ class ContainerConfiguratorTest extends TestCase {
 	}
 
 	/**
+	 * Tests adding and checking a service.
+	 *
 	 * @test
 	 */
 	public function testAddHasService(): void {
@@ -35,7 +47,6 @@ class ContainerConfiguratorTest extends TestCase {
 
 		$testee->addService(
 			$expectedKey,
-			/** @return mixed */
 			static function () use ( $expectedValue ) {
 				return $expectedValue;
 			}
@@ -45,6 +56,8 @@ class ContainerConfiguratorTest extends TestCase {
 	}
 
 	/**
+	 * Tests that a later service registration overrides an earlier one.
+	 *
 	 * @test
 	 */
 	public function testServiceOverride(): void {
@@ -70,6 +83,8 @@ class ContainerConfiguratorTest extends TestCase {
 	}
 
 	/**
+	 * Tests that an unknown service is reported as missing.
+	 *
 	 * @test
 	 */
 	public function testHasServiceNotFound(): void {
@@ -78,6 +93,8 @@ class ContainerConfiguratorTest extends TestCase {
 	}
 
 	/**
+	 * Tests looking up a service provided by a child container.
+	 *
 	 * @test
 	 */
 	public function testHasServiceInChildContainer(): void {
@@ -91,6 +108,8 @@ class ContainerConfiguratorTest extends TestCase {
 	}
 
 	/**
+	 * Tests registering and resolving from a custom child container.
+	 *
 	 * @test
 	 */
 	public function testCustomContainer(): void {
@@ -99,17 +118,39 @@ class ContainerConfiguratorTest extends TestCase {
 
 		$childContainer = new class($expectedId, $expectedValue) implements ContainerInterface
 		{
-			/** @var array<string, object> */
+			/**
+			 * Values keyed by id.
+			 *
+			 * @var array<string, object>
+			 */
 			private array $values = array();
 
+			/**
+			 * Constructor.
+			 *
+			 * @param string $expectedId    Value id.
+			 * @param object $expectedValue Value to store.
+			 */
 			public function __construct( string $expectedId, object $expectedValue ) {
 				$this->values[ $expectedId ] = $expectedValue;
 			}
 
+			/**
+			 * Returns the value for the given id.
+			 *
+			 * @param string $id Value id.
+			 * @return mixed
+			 */
 			public function get( string $id ) {
 				return $this->values[ $id ];
 			}
 
+			/**
+			 * Returns whether a value with the given id exists.
+			 *
+			 * @param string $id Value id.
+			 * @return bool
+			 */
 			public function has( string $id ): bool {
 				return isset( $this->values[ $id ] );
 			}
