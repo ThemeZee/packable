@@ -322,8 +322,17 @@ class Package {
 	 * Runs the "boot" phase, executing modules after building if needed.
 	 *
 	 * @return bool
+	 * @throws \Exception When called reentrantly from a hook fired during build().
 	 */
 	public function boot(): bool {
+		// Prevent reentrant boot() calls from a hook fired during build(): at that point the
+		// package is mid-build (not yet "built") but its status has already moved past IDLE.
+		// Throwing here, outside the try, lets the exception propagate to build(), which records
+		// it as a build failure instead of a boot failure.
+		if ( ! $this->built && $this->hasReachedStatus( self::STATUS_INITIALIZING ) ) {
+			throw new \Exception( esc_html( "Can't boot application at this point." ) );
+		}
+
 		try {
 			// When package is done, nothing should happen to it calling boot again, but we call
 			// false to signal something is off.
