@@ -68,7 +68,7 @@ Among other things, this enables to easily apply the same operations to multiple
 
 ## Usage example
 
-The following code shows how to use this class for a plugin. A theme or library usage would not differ much. 
+The following code shows how to use this class for a plugin. A theme usage would not differ much. 
 
 ```php
 /* Plugin Name: Acme */

@@ -1,5 +1,5 @@
 # Properties
-Properties containing additional information about your Application and can be built based on Themes, Plugins or Libraries. The Properties itself are immutable and only grant access to values after they were injected into the Package-class.
+Properties containing additional information about your Application and can be built based on Themes or Plugins. The Properties itself are immutable and only grant access to values after they were injected into the Package-class.
 
 Properties are added to the Package-class and automatically added as a Service to the primary Container.
 
@@ -32,23 +32,23 @@ class ModuleThree implements ExecutableModule
 
 A specific instance of your Properties will use the following data:
 
-| Properties method | Theme - style.css | Plugin - file header | Library - composer.json |
-| --- | --- | --- | --- |
-| Properties::author() | Author | Author | authors[0].name |
-| Properties::authorUri() | Author URI | Author URI | authors[0].homepage |
-| Properties::description() | Description | Description | description |
-| Properties::domainPath() | Domain Path | Domain Path | extra.packable.domainPath |
-| Properties::name() | Theme Name | Plugin Name | extra.packable.name |
-| Properties::textDomain() | Text Domain | Text Domain | extra.packable.textDomain |
-| Properties::uri() | Theme URI | Plugin URI | extra.packable.uri |
-| Properties::version() | Version | Version | version<br>extra.packable.version |
-| Properties::requiresWp() | Requires at least | Requires at least | extra.packable.requiresWp |
-| Properties::requiresPhp() | Requires PHP | Requires PHP | require.php<br>require-dev.php |
-| Properties::baseUrl() | WP_Theme::get_stylesheet_directory_uri() | plugins_url() |  |
-| Properties::network() |  | Network |  |
-| Properties::status() | Status |  |  |
-| Properties::tags() | Tags |  | keywords |
-| Properties::template() | Template |  |  |
+| Properties method | Theme - style.css | Plugin - file header |
+| --- | --- | --- |
+| Properties::author() | Author | Author |
+| Properties::authorUri() | Author URI | Author URI |
+| Properties::description() | Description | Description |
+| Properties::domainPath() | Domain Path | Domain Path |
+| Properties::name() | Theme Name | Plugin Name |
+| Properties::textDomain() | Text Domain | Text Domain |
+| Properties::uri() | Theme URI | Plugin URI |
+| Properties::version() | Version | Version |
+| Properties::requiresWp() | Requires at least | Requires at least |
+| Properties::requiresPhp() | Requires PHP | Requires PHP |
+| Properties::baseUrl() | WP_Theme::get_stylesheet_directory_uri() | plugins_url() |
+| Properties::network() |  | Network |
+| Properties::status() | Status |  |
+| Properties::tags() | Tags |  |
+| Properties::template() | Template |  |
 
 
 
@@ -93,43 +93,3 @@ Additionally, ThemeProperties will have the following public API:
 - `ThemeProperties::isChildTheme(): bool` - True, when the Theme is a Child Theme and using a template.
 - `ThemeProperties::isCurrentTheme(): bool` - returns true when this Theme is activated.
 - `ThemeProperties::parentThemeProperties(): ?ThemeProperties` - returns Properties of the parent theme if it is a child-Theme.
-
-
-
-## LibraryProperties
-
-For libraries, you can use the LibraryProperties which give you context based on your composer.json. You can bootstrap your standalone-library like following:
-
-```php
-use ThemeZee\Packable\Properties;
-
-$properties = Properties\LibraryProperties::new('path/to/composer.json');
-```
-
-Often when creating a library we don't know the base URL of library, because we don't know where it
-gets installed and WP does not natively support libraries. That is why by default 
-`LibraryProperties::baseUrl()` returns null.
-
-In the case a `LibraryProperties` instance is created in a context where the base URL is known, it
-is possible to include it when creating the instance:
-
-```php
-$url = 'https://example.com/wp-content/vendor/my/library';
-$properties = ThemeZee\Packable\Properties\LibraryProperties::new('path/to/composer.json', $url);
-```
-
-Alternatively, is the URL is known at a later time, when an instance of `LibraryProperties` is
-already present, it is possible to use the `withBaseUrl()` method:
-
-```php
-$url = 'https://example.com/wp-content/vendor/my/library';
-/** @var ThemeZee\Packable\Properties\LibraryProperties $properties */
-$properties->withBaseUrl($url);
-```
-
-Please note that `withBaseUrl()` will only work if a base URL is not set already, otherwise it will
-throw an exception.
-
-Additionally, `LibraryProperties` will have the following public API:
-
-- `LibraryProperties::tags(): array` - returns a list of keywords defined in composer.json.
