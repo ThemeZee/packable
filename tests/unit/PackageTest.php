@@ -54,8 +54,6 @@ class PackageTest extends TestCase
         static::assertTrue($package->hasReachedStatus(Package::STATUS_BOOTED));
         static::assertTrue($package->hasReachedStatus(Package::STATUS_DONE));
         static::assertFalse($package->hasReachedStatus(6));
-        // @phpstan-ignore classConstant.deprecated (check backward compatibility with deprecated constant)
-        static::assertTrue($package->hasReachedStatus(Package::STATUS_MODULES_ADDED));
 
         static::assertSame($expectedName, $package->name());
         static::assertInstanceOf(Properties::class, $package->properties());
@@ -249,46 +247,6 @@ class PackageTest extends TestCase
 
     /**
      * @test
-     * @runInSeparateProcess
-     */
-    public function testBootPassingModulesEmitDeprecation(): void
-    {
-        $module1 = $this->stubModule('module_1', ServiceModule::class);
-        $module1->allows('services')->andReturn($this->stubServices('service_1'));
-
-        $package = Package::new($this->stubProperties('test', true));
-
-        $this->convertDeprecationsToExceptions();
-        try {
-            $count = 0;
-            $package->boot($module1);
-        } catch (\Throwable $throwable) {
-            $count++;
-            $this->assertThrowableMessageMatches($throwable, 'boot().+?deprecated.+?1\.7');
-        } finally {
-            static::assertSame(1, $count);
-        }
-    }
-
-    /**
-     * @test
-     * @runInSeparateProcess
-     */
-    public function testBootPassingModulesAddModules(): void
-    {
-        $module1 = $this->stubModule('module_1', ServiceModule::class);
-        $module1->allows('services')->andReturn($this->stubServices('service_1'));
-
-        $package = Package::new($this->stubProperties('test', true));
-
-        $this->ignoreDeprecations();
-        $package->boot($module1);
-
-        static::assertSame('service_1', $package->container()->get('service_1')['id']);
-    }
-
-    /**
-     * @test
      */
     public function testAddModuleFailsAfterBuild(): void
     {
@@ -345,64 +303,6 @@ class PackageTest extends TestCase
             ->works();
 
         static::assertSame('Works!', $actual);
-    }
-
-    /**
-     * @test
-     */
-    public function testBuildPassingModulesToBoot(): void
-    {
-        $module1 = $this->stubModule('module_1', ServiceModule::class);
-        $module1->expects('services')->andReturn($this->stubServices('service_1'));
-
-        $module2 = $this->stubModule('module_2', ServiceModule::class);
-        $module2->expects('services')->andReturn($this->stubServices('service_2'));
-
-        $module3 = $this->stubModule('module_3', ServiceModule::class);
-        $module3->expects('services')->andReturn($this->stubServices('service_3'));
-
-        $package = Package::new($this->stubProperties('test', true))
-            ->addModule($module1)
-            ->addModule($module2)
-            ->build();
-
-        $this->ignoreDeprecations();
-        $package->boot($module2, $module3);
-
-        $container = $package->container();
-
-        static::assertSame('service_1', $container->get('service_1')['id']);
-        static::assertSame('service_2', $container->get('service_2')['id']);
-        static::assertSame('service_3', $container->get('service_3')['id']);
-    }
-
-    /**
-     * @test
-     */
-    public function testBootFailsIfPassingNotAddedModulesAfterContainer(): void
-    {
-        $module1 = $this->stubModule('module_1', ServiceModule::class);
-        $module1->expects('services')->andReturn($this->stubServices('service_1'));
-
-        $module2 = $this->stubModule('module_2', ServiceModule::class);
-        $module2->expects('services')->andReturn($this->stubServices('service_2'));
-
-        $module3 = $this->stubModule('module_3', ServiceModule::class);
-        $module3->allows('services')->andReturn($this->stubServices('service_3'));
-
-        $package = Package::new($this->stubProperties('test', true))
-            ->addModule($module1)
-            ->addModule($module2)
-            ->build();
-
-        $container = $package->container();
-
-        static::assertSame('service_1', $container->get('service_1')['id']);
-        static::assertSame('service_2', $container->get('service_2')['id']);
-
-        $this->expectExceptionMessageMatches("/can't add module module_3/i");
-        $this->ignoreDeprecations();
-        $package->boot($module2, $module3);
     }
 
     /**
@@ -534,7 +434,7 @@ class PackageTest extends TestCase
 
     /**
      * This is mostly identical to the above where we do `build()->boot()` but here we do
-     * we do just `build()` and we expect very similar result, but ACTION_READY never fired.
+     * we do just `build()` and we expect very similar result, but ACTION_BOOTED never fired.
      *
      * @test
      */

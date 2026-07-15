@@ -12,15 +12,12 @@ use ThemeZee\Packable\Package;
 use ThemeZee\Packable\Properties\Properties;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery\MockInterface;
-use PHPUnit\Framework\Error\Deprecated;
 use PHPUnit\Framework\TestCase as FrameworkTestCase;
 use Psr\Container\ContainerInterface;
 
 abstract class TestCase extends FrameworkTestCase
 {
     use MockeryPHPUnitIntegration;
-
-    private ?int $currentErrorReporting = null;
 
     /**
      * @return void
@@ -39,9 +36,6 @@ abstract class TestCase extends FrameworkTestCase
     {
         Monkey\tearDown();
         parent::tearDown();
-        if (is_int($this->currentErrorReporting)) {
-            error_reporting($this->currentErrorReporting);
-        }
     }
 
     /**
@@ -148,33 +142,6 @@ abstract class TestCase extends FrameworkTestCase
                 return isset($this->services[$id]);
             }
         };
-    }
-
-    /**
-     * @return void
-     */
-    protected function ignoreDeprecations(): void
-    {
-        \Brain\Monkey\Actions\expectDone('wp_trigger_error_run')->atLeast()->once();
-
-        $this->currentErrorReporting = error_reporting();
-        error_reporting($this->currentErrorReporting & ~\E_DEPRECATED & ~\E_USER_DEPRECATED);
-    }
-
-    /**
-     * @return void
-     */
-    protected function convertDeprecationsToExceptions(): void
-    {
-        $this->currentErrorReporting = error_reporting();
-        error_reporting($this->currentErrorReporting | \E_DEPRECATED | \E_USER_DEPRECATED);
-
-        set_error_handler(
-            static function (int $code, string $msg, ?string $file = null, ?int $line = null): void {
-                throw new Deprecated($msg, $code, $file ?? '', $line ?? 0);
-            },
-            \E_DEPRECATED | \E_USER_DEPRECATED
-        );
     }
 
     /**
