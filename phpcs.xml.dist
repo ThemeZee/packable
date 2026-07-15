@@ -7,10 +7,10 @@
     <!-- Report warnings, but return zero exit code. -->
     <config name="ignore_warnings_on_exit" value="1" />
 
-    <!-- Check for cross-version support for PHP 7.4 and higher. -->
-    <config name="testVersion" value="7.4-" />
+    <!-- Check for cross-version support for PHP 8.1 and higher. -->
+    <config name="testVersion" value="8.1-" />
 
-    <config name="php_version" value="70400" />
+    <config name="php_version" value="80100" />
 
     <file>./src</file>
     <file>./tests</file>
