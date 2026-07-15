@@ -7,12 +7,12 @@ namespace ThemeZee\Packable\Module;
 /**
  * @package ThemeZee\Packable\Module
  */
-interface Module
-{
-    /**
-     * Unique identifier for your Module.
-     *
-     * @return string
-     */
-    public function id(): string;
+interface Module {
+
+	/**
+	 * Unique identifier for your Module.
+	 *
+	 * @return string
+	 */
+	public function id(): string;
 }

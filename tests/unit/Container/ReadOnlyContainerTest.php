@@ -9,158 +9,148 @@ use ThemeZee\Packable\Tests\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-class ReadOnlyContainerTest extends TestCase
-{
-    /**
-     * @test
-     */
-    public function testBasic(): void
-    {
-        $testee = $this->factoryContainer();
+class ReadOnlyContainerTest extends TestCase {
 
-        static::assertInstanceOf(ContainerInterface::class, $testee);
-        static::assertFalse($testee->has('unknown'));
-    }
+	/**
+	 * @test
+	 */
+	public function testBasic(): void {
+		$testee = $this->factoryContainer();
 
-    /**
-     * @test
-     */
-    public function testGetUnknown(): void
-    {
-        static::expectException(NotFoundExceptionInterface::class);
+		static::assertInstanceOf( ContainerInterface::class, $testee );
+		static::assertFalse( $testee->has( 'unknown' ) );
+	}
 
-        $testee = $this->factoryContainer();
-        $testee->get('unknown');
-    }
+	/**
+	 * @test
+	 */
+	public function testGetUnknown(): void {
+		static::expectException( NotFoundExceptionInterface::class );
 
-    /**
-     * @test
-     * @dataProvider provideServices
-     *
-     * @param mixed $expected
-     * @param callable $service
-     */
-    public function testHasGetService($expected, callable $service): void
-    {
-        $expectedId = 'service';
-        $services = [$expectedId => $service];
-        $testee = $this->factoryContainer($services);
+		$testee = $this->factoryContainer();
+		$testee->get( 'unknown' );
+	}
 
-        // check in Services
-        static::assertTrue($testee->has($expectedId));
-        // resolve Service
-        static::assertSame($expected, $testee->get($expectedId));
-        // check in resolved Services
-        static::assertTrue($testee->has($expectedId));
-    }
+	/**
+	 * @test
+	 * @dataProvider provideServices
+	 *
+	 * @param mixed    $expected
+	 * @param callable $service
+	 */
+	public function testHasGetService( $expected, callable $service ): void {
+		$expectedId = 'service';
+		$services   = array( $expectedId => $service );
+		$testee     = $this->factoryContainer( $services );
 
-    /**
-     * @return \Generator
-     */
-    public static function provideServices(): \Generator
-    {
-        $service = new \stdClass();
-        yield 'object service' => [
-            $service,
-            static function () use ($service): object {
-                return $service;
-            },
-        ];
+		// check in Services
+		static::assertTrue( $testee->has( $expectedId ) );
+		// resolve Service
+		static::assertSame( $expected, $testee->get( $expectedId ) );
+		// check in resolved Services
+		static::assertTrue( $testee->has( $expectedId ) );
+	}
 
-        $service = 'foo';
-        yield 'string service' => [
-            $service,
-            static function () use ($service): string {
-                return $service;
-            },
-        ];
+	/**
+	 * @return \Generator
+	 */
+	public static function provideServices(): \Generator {
+		$service = new \stdClass();
+		yield 'object service' => array(
+			$service,
+			static function () use ( $service ): object {
+				return $service;
+			},
+		);
 
-        $service = ['foo', 'bar'];
-        yield 'array service' => [
-            $service,
-            static function () use ($service): array {
-                return $service;
-            },
-        ];
-    }
+		$service = 'foo';
+		yield 'string service' => array(
+			$service,
+			static function () use ( $service ): string {
+				return $service;
+			},
+		);
 
-    /**
-     * @test
-     */
-    public function testHasGetServiceFromChildContainer(): void
-    {
-        $expectedKey = 'service';
-        $expectedValue = new \stdClass();
+		$service = array( 'foo', 'bar' );
+		yield 'array service' => array(
+			$service,
+			static function () use ( $service ): array {
+				return $service;
+			},
+		);
+	}
 
-        $childContainer = new class ($expectedKey, $expectedValue) implements ContainerInterface {
-            /** @var array<string, \stdClass> */
-            private array $data = [];
+	/**
+	 * @test
+	 */
+	public function testHasGetServiceFromChildContainer(): void {
+		$expectedKey   = 'service';
+		$expectedValue = new \stdClass();
 
-            public function __construct(string $key, \stdClass $value)
-            {
-                $this->data[$key] = $value;
-            }
+		$childContainer = new class($expectedKey, $expectedValue) implements ContainerInterface {
+			/** @var array<string, \stdClass> */
+			private array $data = array();
 
-            public function get(string $id)
-            {
-                return $this->data[$id];
-            }
+			public function __construct( string $key, \stdClass $value ) {
+				$this->data[ $key ] = $value;
+			}
 
-            public function has(string $id): bool
-            {
-                return isset($this->data[$id]);
-            }
-        };
+			public function get( string $id ) {
+				return $this->data[ $id ];
+			}
 
-        $testee = $this->factoryContainer([], [$childContainer]);
+			public function has( string $id ): bool {
+				return isset( $this->data[ $id ] );
+			}
+		};
 
-        // check in child Container
-        static::assertTrue($testee->has($expectedKey));
-        // resolve Service
-        static::assertSame($expectedValue, $testee->get($expectedKey));
-        // check in resolved Services
-        static::assertTrue($testee->has($expectedKey));
-    }
+		$testee = $this->factoryContainer( array(), array( $childContainer ) );
 
-    /**
-     * @test
-     */
-    public function testServicesAreCached(): void
-    {
-        $expectedServiceKey = 'service';
-        $services = [
-            $expectedServiceKey => function (): object {
-                return new class {
-                    protected int $serviceCounter = 0;
+		// check in child Container
+		static::assertTrue( $testee->has( $expectedKey ) );
+		// resolve Service
+		static::assertSame( $expectedValue, $testee->get( $expectedKey ) );
+		// check in resolved Services
+		static::assertTrue( $testee->has( $expectedKey ) );
+	}
 
-                    public function count(): int
-                    {
-                        $this->serviceCounter++;
+	/**
+	 * @test
+	 */
+	public function testServicesAreCached(): void {
+		$expectedServiceKey = 'service';
+		$services           = array(
+			$expectedServiceKey => function (): object {
+				return new class() {
+					protected int $serviceCounter = 0;
 
-                        return $this->serviceCounter;
-                    }
-                };
-            },
-        ];
+					public function count(): int {
+						++$this->serviceCounter;
 
-        $testee = $this->factoryContainer($services);
+						return $this->serviceCounter;
+					}
+				};
+			},
+		);
 
-        // Services are cached and same instance is returned.
-        static::assertSame(1, $testee->get($expectedServiceKey)->count());
-        static::assertSame(2, $testee->get($expectedServiceKey)->count());
-    }
+		$testee = $this->factoryContainer( $services );
 
-    /**
-     * @param array<string, callable(ContainerInterface): mixed> $services
-     * @param ContainerInterface[] $containers
-     *
-     * @return Container
-     */
-    private function factoryContainer(
-        array $services = [],
-        array $containers = []
-    ): Container {
+		// Services are cached and same instance is returned.
+		static::assertSame( 1, $testee->get( $expectedServiceKey )->count() );
+		static::assertSame( 2, $testee->get( $expectedServiceKey )->count() );
+	}
 
-        return new Container($services, $containers);
-    }
+	/**
+	 * @param array<string, callable(ContainerInterface): mixed> $services
+	 * @param ContainerInterface[]                               $containers
+	 *
+	 * @return Container
+	 */
+	private function factoryContainer(
+		array $services = array(),
+		array $containers = array()
+	): Container {
+
+		return new Container( $services, $containers );
+	}
 }

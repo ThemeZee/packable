@@ -14,34 +14,32 @@
 
     <file>./src</file>
     <file>./tests</file>
-    <exclude-pattern>./tests/unit/stubs.php</exclude-pattern>
 
     <!-- Use colors, and show sniff error codes and progress. -->
     <arg name="colors" />
     <arg value="sp" />
 
-    <rule ref="Syde-Extra">
-        <exclude name="SlevomatCodingStandard.Functions.RequireTrailingCommaInCall.MissingTrailingComma" />
+    <!-- Use the WordPress coding standards. -->
+    <rule ref="WordPress">
+        <!--
+            This is a PSR-4 autoloaded library: file names must match the class name
+            (e.g. Package.php), which is incompatible with WordPress' class-{name}.php
+            file naming.
+        -->
+        <exclude name="WordPress.Files.FileName" />
+        <!--
+            The library uses namespaced, camelCase method and property names (PSR style),
+            not WordPress' snake_case function/variable naming.
+        -->
+        <exclude name="WordPress.NamingConventions.ValidFunctionName" />
+        <exclude name="WordPress.NamingConventions.ValidVariableName" />
     </rule>
 
     <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
         <exclude-pattern>/tests/boot.php</exclude-pattern>
     </rule>
 
-    <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
-        <properties>
-            <property name="rootNamespaces" type="array">
-                <element key="src" value="ThemeZee\Packable" />
-                <element key="tests/src" value="ThemeZee\Packable\Tests" />
-                <element key="tests/unit" value="ThemeZee\Packable\Tests\Unit" />
-            </property>
-        </properties>
-    </rule>
-
     <rule ref="Squiz.PHP.Eval">
-        <exclude-pattern>*/tests/*</exclude-pattern>
-    </rule>
-    <rule ref="Syde.Functions.FunctionLength.TooLong">
         <exclude-pattern>*/tests/*</exclude-pattern>
     </rule>
     <rule ref="WordPress.PHP.DevelopmentFunctions">

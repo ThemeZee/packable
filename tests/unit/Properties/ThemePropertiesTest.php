@@ -9,113 +9,111 @@ use ThemeZee\Packable\Properties\Properties;
 use ThemeZee\Packable\Properties\ThemeProperties;
 use ThemeZee\Packable\Tests\TestCase;
 
-class ThemePropertiesTest extends TestCase
-{
-    /**
-     * @test
-     */
-    public function testBasic(): void
-    {
-        $expectedDescription = 'the description';
-        $expectedAuthor = 'ThemeZee';
-        $expectedAuthorUri = 'https://themezee.com/';
-        $expectedDomainPath = 'languages/';
-        $expectedName = "Properties Test";
-        $expectedTextDomain = 'properties-test';
-        $expectedUri = 'https://github.com/themezee/packable';
-        $expectedVersion = '1.0';
-        $expectedPhpVersion = "7.4";
-        $expectedWpVersion = "5.3";
-        $expectedStatus = 'publish';
-        $expectedTags = ['foo', 'bar'];
+class ThemePropertiesTest extends TestCase {
 
-        $expectedBaseName = 'plugin-name';
-        $expectedBasePath = '/path/to/plugin/';
-        $expectedBaseUrl = 'https://localhost' . $expectedBasePath;
+	/**
+	 * @test
+	 */
+	public function testBasic(): void {
+		$expectedDescription = 'the description';
+		$expectedAuthor      = 'ThemeZee';
+		$expectedAuthorUri   = 'https://themezee.com/';
+		$expectedDomainPath  = 'languages/';
+		$expectedName        = 'Properties Test';
+		$expectedTextDomain  = 'properties-test';
+		$expectedUri         = 'https://github.com/themezee/packable';
+		$expectedVersion     = '1.0';
+		$expectedPhpVersion  = '7.4';
+		$expectedWpVersion   = '5.3';
+		$expectedStatus      = 'publish';
+		$expectedTags        = array( 'foo', 'bar' );
 
-        $values = [
-            'Author' => $expectedAuthor,
-            'AuthorURI' => $expectedAuthorUri,
-            'Description' => $expectedDescription,
-            'DomainPath' => $expectedDomainPath,
-            'Name' => $expectedName,
-            'TextDomain' => $expectedTextDomain,
-            'ThemeURI' => $expectedUri,
-            'Version' => $expectedVersion,
-            'RequiresWP' => $expectedWpVersion,
-            'RequiresPHP' => $expectedPhpVersion,
-            'Status' => $expectedStatus,
-            'Tags' => $expectedTags,
-            // No child-Theme.
-            'Template' => '',
-        ];
+		$expectedBaseName = 'plugin-name';
+		$expectedBasePath = '/path/to/plugin/';
+		$expectedBaseUrl  = 'https://localhost' . $expectedBasePath;
 
-        $themeStub = \Mockery::mock(\WP_Theme::class);
-        foreach ($values as $key => $return) {
-            $themeStub->expects('get')->with($key)->andReturn($return);
-        }
-        $themeStub->expects('get_stylesheet')->andReturn($expectedBaseName);
-        $themeStub->expects('get_stylesheet_directory')->andReturn($expectedBasePath);
-        $themeStub->expects('get_stylesheet_directory_uri')->andReturn($expectedBaseUrl);
+		$values = array(
+			'Author'      => $expectedAuthor,
+			'AuthorURI'   => $expectedAuthorUri,
+			'Description' => $expectedDescription,
+			'DomainPath'  => $expectedDomainPath,
+			'Name'        => $expectedName,
+			'TextDomain'  => $expectedTextDomain,
+			'ThemeURI'    => $expectedUri,
+			'Version'     => $expectedVersion,
+			'RequiresWP'  => $expectedWpVersion,
+			'RequiresPHP' => $expectedPhpVersion,
+			'Status'      => $expectedStatus,
+			'Tags'        => $expectedTags,
+			// No child-Theme.
+			'Template'    => '',
+		);
 
-        Functions\expect('wp_get_theme')->with($expectedBasePath)->andReturn($themeStub);
-        Functions\expect('get_stylesheet')->andReturn($expectedBaseName);
+		$themeStub = \Mockery::mock( \WP_Theme::class );
+		foreach ( $values as $key => $return ) {
+			$themeStub->expects( 'get' )->with( $key )->andReturn( $return );
+		}
+		$themeStub->expects( 'get_stylesheet' )->andReturn( $expectedBaseName );
+		$themeStub->expects( 'get_stylesheet_directory' )->andReturn( $expectedBasePath );
+		$themeStub->expects( 'get_stylesheet_directory_uri' )->andReturn( $expectedBaseUrl );
 
-        $properties = ThemeProperties::new($expectedBasePath);
+		Functions\expect( 'wp_get_theme' )->with( $expectedBasePath )->andReturn( $themeStub );
+		Functions\expect( 'get_stylesheet' )->andReturn( $expectedBaseName );
 
-        static::assertInstanceOf(Properties::class, $properties);
+		$properties = ThemeProperties::new( $expectedBasePath );
 
-        static::assertSame($expectedBaseName, $properties->baseName());
-        static::assertSame($expectedBasePath, $properties->basePath());
-        static::assertSame($expectedBaseUrl, $properties->baseUrl());
+		static::assertInstanceOf( Properties::class, $properties );
 
-        static::assertSame($expectedDescription, $properties->description());
-        static::assertSame($expectedAuthor, $properties->author());
-        static::assertSame($expectedAuthorUri, $properties->authorUri());
-        static::assertSame($expectedDomainPath, $properties->domainPath());
-        static::assertSame($expectedName, $properties->name());
-        static::assertSame($expectedTextDomain, $properties->textDomain());
-        static::assertSame($expectedUri, $properties->uri());
-        static::assertSame($expectedVersion, $properties->version());
-        static::assertSame($expectedWpVersion, $properties->requiresWp());
-        static::assertSame($expectedPhpVersion, $properties->requiresPhp());
+		static::assertSame( $expectedBaseName, $properties->baseName() );
+		static::assertSame( $expectedBasePath, $properties->basePath() );
+		static::assertSame( $expectedBaseUrl, $properties->baseUrl() );
 
-        // specific methods for Themes.
-        static::assertSame($expectedTags, $properties->tags());
-        static::assertSame('', $properties->template());
-        static::assertSame($expectedStatus, $properties->status());
+		static::assertSame( $expectedDescription, $properties->description() );
+		static::assertSame( $expectedAuthor, $properties->author() );
+		static::assertSame( $expectedAuthorUri, $properties->authorUri() );
+		static::assertSame( $expectedDomainPath, $properties->domainPath() );
+		static::assertSame( $expectedName, $properties->name() );
+		static::assertSame( $expectedTextDomain, $properties->textDomain() );
+		static::assertSame( $expectedUri, $properties->uri() );
+		static::assertSame( $expectedVersion, $properties->version() );
+		static::assertSame( $expectedWpVersion, $properties->requiresWp() );
+		static::assertSame( $expectedPhpVersion, $properties->requiresPhp() );
 
-        // API for Themes
-        static::assertFalse($properties->isChildTheme());
-        static::assertTrue($properties->isCurrentTheme());
-        static::assertNull($properties->parentThemeProperties());
-    }
+		// specific methods for Themes.
+		static::assertSame( $expectedTags, $properties->tags() );
+		static::assertSame( '', $properties->template() );
+		static::assertSame( $expectedStatus, $properties->status() );
 
-    /**
-     * @test
-     */
-    public function testChildTheme(): void
-    {
-        $expectedBaseName = 'plugin-name';
-        $expectedBasePath = '/path/to/plugin/';
-        $expectedBaseUrl = 'https://localhost' . $expectedBasePath;
+		// API for Themes
+		static::assertFalse( $properties->isChildTheme() );
+		static::assertTrue( $properties->isCurrentTheme() );
+		static::assertNull( $properties->parentThemeProperties() );
+	}
 
-        $expectedTemplate = 'parent-theme';
+	/**
+	 * @test
+	 */
+	public function testChildTheme(): void {
+		$expectedBaseName = 'plugin-name';
+		$expectedBasePath = '/path/to/plugin/';
+		$expectedBaseUrl  = 'https://localhost' . $expectedBasePath;
 
-        $themeStub = \Mockery::mock(\WP_Theme::class);
+		$expectedTemplate = 'parent-theme';
 
-        $themeStub->allows('get')->andReturnArg(0)->byDefault();
-        $themeStub->expects('get')->with('Template')->andReturn($expectedTemplate);
+		$themeStub = \Mockery::mock( \WP_Theme::class );
 
-        $themeStub->expects('get_stylesheet')->andReturn($expectedBaseName);
-        $themeStub->expects('get_stylesheet_directory')->andReturn($expectedBasePath);
-        $themeStub->expects('get_stylesheet_directory_uri')->andReturn($expectedBaseUrl);
+		$themeStub->allows( 'get' )->andReturnArg( 0 )->byDefault();
+		$themeStub->expects( 'get' )->with( 'Template' )->andReturn( $expectedTemplate );
 
-        Functions\expect('wp_get_theme')->with($expectedBasePath)->andReturn($themeStub);
+		$themeStub->expects( 'get_stylesheet' )->andReturn( $expectedBaseName );
+		$themeStub->expects( 'get_stylesheet_directory' )->andReturn( $expectedBasePath );
+		$themeStub->expects( 'get_stylesheet_directory_uri' )->andReturn( $expectedBaseUrl );
 
-        $properties = ThemeProperties::new($expectedBasePath);
+		Functions\expect( 'wp_get_theme' )->with( $expectedBasePath )->andReturn( $themeStub );
 
-        static::assertSame($expectedTemplate, $properties->template());
-        static::assertTrue($properties->isChildTheme());
-    }
+		$properties = ThemeProperties::new( $expectedBasePath );
+
+		static::assertSame( $expectedTemplate, $properties->template() );
+		static::assertTrue( $properties->isChildTheme() );
+	}
 }

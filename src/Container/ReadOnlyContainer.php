@@ -7,78 +7,76 @@ namespace ThemeZee\Packable\Container;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-class ReadOnlyContainer implements ContainerInterface
-{
-    /** @var array<string, callable(ContainerInterface): mixed> */
-    private array $services;
-    /** @var ContainerInterface[] */
-    private array $containers;
-    /** @var array<string, mixed> */
-    private array $resolvedServices = [];
+class ReadOnlyContainer implements ContainerInterface {
 
-    /**
-     * @param array<string, callable(ContainerInterface): mixed> $services
-     * @param ContainerInterface[] $containers
-     */
-    public function __construct(
-        array $services,
-        array $containers
-    ) {
+	/** @var array<string, callable(ContainerInterface): mixed> */
+	private array $services;
+	/** @var ContainerInterface[] */
+	private array $containers;
+	/** @var array<string, mixed> */
+	private array $resolvedServices = array();
 
-        $this->services = $services;
-        $this->containers = $containers;
-    }
+	/**
+	 * @param array<string, callable(ContainerInterface): mixed> $services
+	 * @param ContainerInterface[]                               $containers
+	 */
+	public function __construct(
+		array $services,
+		array $containers
+	) {
 
-    /**
-     * @param string $id
-     * @return mixed
-     */
-    public function get(string $id)
-    {
-        if (array_key_exists($id, $this->resolvedServices)) {
-            return $this->resolvedServices[$id];
-        }
+		$this->services   = $services;
+		$this->containers = $containers;
+	}
 
-        if (array_key_exists($id, $this->services)) {
-            $service = $this->services[$id]($this);
-            $this->resolvedServices[$id] = $service;
-            unset($this->services[$id]);
+	/**
+	 * @param string $id
+	 * @return mixed
+	 */
+	public function get( string $id ) {
+		if ( array_key_exists( $id, $this->resolvedServices ) ) {
+			return $this->resolvedServices[ $id ];
+		}
 
-            return $service;
-        }
+		if ( array_key_exists( $id, $this->services ) ) {
+			$service                       = $this->services[ $id ]( $this );
+			$this->resolvedServices[ $id ] = $service;
+			unset( $this->services[ $id ] );
 
-        foreach ($this->containers as $container) {
-            if ($container->has($id)) {
-                return $container->get($id);
-            }
-        }
+			return $service;
+		}
 
-        $error = "Service with ID {$id} not found.";
-        throw new class (esc_html($error)) extends \Exception implements NotFoundExceptionInterface
-        {
-        };
-    }
+		foreach ( $this->containers as $container ) {
+			if ( $container->has( $id ) ) {
+				return $container->get( $id );
+			}
+		}
 
-    /**
-     * @param string $id
-     * @return bool
-     */
-    public function has(string $id): bool
-    {
-        if (array_key_exists($id, $this->services)) {
-            return true;
-        }
+		$error = "Service with ID {$id} not found.";
+		throw new class(esc_html( $error )) extends \Exception implements NotFoundExceptionInterface
+		{
+		};
+	}
 
-        if (array_key_exists($id, $this->resolvedServices)) {
-            return true;
-        }
+	/**
+	 * @param string $id
+	 * @return bool
+	 */
+	public function has( string $id ): bool {
+		if ( array_key_exists( $id, $this->services ) ) {
+			return true;
+		}
 
-        foreach ($this->containers as $container) {
-            if ($container->has($id)) {
-                return true;
-            }
-        }
+		if ( array_key_exists( $id, $this->resolvedServices ) ) {
+			return true;
+		}
 
-        return false;
-    }
+		foreach ( $this->containers as $container ) {
+			if ( $container->has( $id ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 }

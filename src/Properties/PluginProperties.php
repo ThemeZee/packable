@@ -4,151 +4,143 @@ declare(strict_types=1);
 
 namespace ThemeZee\Packable\Properties;
 
-class PluginProperties extends BaseProperties
-{
-    // Custom properties for Plugins
-    public const PROP_NETWORK = 'network';
-    public const PROP_REQUIRES_PLUGINS = 'requiresPlugins';
+class PluginProperties extends BaseProperties {
 
-    /**
-     * @see https://developer.wordpress.org/reference/functions/get_plugin_data/
-     */
-    protected const HEADERS = [
-        self::PROP_AUTHOR => 'Author',
-        self::PROP_AUTHOR_URI => 'AuthorURI',
-        self::PROP_DESCRIPTION => 'Description',
-        self::PROP_DOMAIN_PATH => 'DomainPath',
-        self::PROP_NAME => 'Name',
-        self::PROP_TEXTDOMAIN => 'TextDomain',
-        self::PROP_URI => 'PluginURI',
-        self::PROP_VERSION => 'Version',
-        self::PROP_REQUIRES_WP => 'RequiresWP',
-        self::PROP_REQUIRES_PHP => 'RequiresPHP',
+	// Custom properties for Plugins
+	public const PROP_NETWORK          = 'network';
+	public const PROP_REQUIRES_PLUGINS = 'requiresPlugins';
 
-        // additional headers
-        self::PROP_NETWORK => 'Network',
-        self::PROP_REQUIRES_PLUGINS => 'RequiresPlugins',
-    ];
+	/**
+	 * @see https://developer.wordpress.org/reference/functions/get_plugin_data/
+	 */
+	protected const HEADERS = array(
+		self::PROP_AUTHOR           => 'Author',
+		self::PROP_AUTHOR_URI       => 'AuthorURI',
+		self::PROP_DESCRIPTION      => 'Description',
+		self::PROP_DOMAIN_PATH      => 'DomainPath',
+		self::PROP_NAME             => 'Name',
+		self::PROP_TEXTDOMAIN       => 'TextDomain',
+		self::PROP_URI              => 'PluginURI',
+		self::PROP_VERSION          => 'Version',
+		self::PROP_REQUIRES_WP      => 'RequiresWP',
+		self::PROP_REQUIRES_PHP     => 'RequiresPHP',
 
-    private string $pluginMainFile;
-    private string $pluginBaseName;
-    protected ?bool $isMu = null;
-    protected ?bool $isActive = null;
-    protected ?bool $isNetworkActive = null;
+		// additional headers
+		self::PROP_NETWORK          => 'Network',
+		self::PROP_REQUIRES_PLUGINS => 'RequiresPlugins',
+	);
 
-    /**
-     * @param string $pluginMainFile
-     * @return PluginProperties
-     */
-    public static function new(string $pluginMainFile): PluginProperties
-    {
-        return new self($pluginMainFile);
-    }
+	private string $pluginMainFile;
+	private string $pluginBaseName;
+	protected ?bool $isMu            = null;
+	protected ?bool $isActive        = null;
+	protected ?bool $isNetworkActive = null;
 
-    /**
-     * @param string $pluginMainFile
-     */
-    protected function __construct(string $pluginMainFile)
-    {
-        if (!function_exists('get_plugin_data')) {
-            require_once ABSPATH . 'wp-admin/includes/plugin.php';
-        }
+	/**
+	 * @param string $pluginMainFile
+	 * @return PluginProperties
+	 */
+	public static function new( string $pluginMainFile ): PluginProperties {
+		return new self( $pluginMainFile );
+	}
 
-        // $markup = false, to avoid an incorrect early wptexturize call.
-        // $translate = false, to avoid loading translations too early
-        // @see https://core.trac.wordpress.org/ticket/49965
-        // @see https://core.trac.wordpress.org/ticket/34114
-        $pluginData = (array) get_plugin_data($pluginMainFile, false, false);
-        $properties = Properties::DEFAULT_PROPERTIES;
+	/**
+	 * @param string $pluginMainFile
+	 */
+	protected function __construct( string $pluginMainFile ) {
+		if ( ! function_exists( 'get_plugin_data' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
 
-        // Map pluginData to internal structure.
-        foreach (self::HEADERS as $key => $pluginDataKey) {
-            $properties[$key] = $pluginData[$pluginDataKey] ?? '';
-            unset($pluginData[$pluginDataKey]);
-        }
-        /** @var array<string, mixed> $properties */
-        $properties = array_merge($properties, $pluginData);
+		// $markup = false, to avoid an incorrect early wptexturize call.
+		// $translate = false, to avoid loading translations too early
+		// @see https://core.trac.wordpress.org/ticket/49965
+		// @see https://core.trac.wordpress.org/ticket/34114
+		$pluginData = (array) get_plugin_data( $pluginMainFile, false, false );
+		$properties = Properties::DEFAULT_PROPERTIES;
 
-        $this->pluginMainFile = wp_normalize_path($pluginMainFile);
+		// Map pluginData to internal structure.
+		foreach ( self::HEADERS as $key => $pluginDataKey ) {
+			$properties[ $key ] = $pluginData[ $pluginDataKey ] ?? '';
+			unset( $pluginData[ $pluginDataKey ] );
+		}
+		/** @var array<string, mixed> $properties */
+		$properties = array_merge( $properties, $pluginData );
 
-        $this->pluginBaseName = plugin_basename($pluginMainFile);
-        $basePath = plugin_dir_path($pluginMainFile);
-        $baseUrl = plugins_url('/', $pluginMainFile);
+		$this->pluginMainFile = wp_normalize_path( $pluginMainFile );
 
-        parent::__construct(
-            $this->pluginBaseName,
-            $basePath,
-            $baseUrl,
-            $properties
-        );
-    }
+		$this->pluginBaseName = plugin_basename( $pluginMainFile );
+		$basePath             = plugin_dir_path( $pluginMainFile );
+		$baseUrl              = plugins_url( '/', $pluginMainFile );
 
-    /**
-     * @return string
-     */
-    public function pluginMainFile(): string
-    {
-        return $this->pluginMainFile;
-    }
+		parent::__construct(
+			$this->pluginBaseName,
+			$basePath,
+			$baseUrl,
+			$properties
+		);
+	}
 
-    /**
-     * @return bool
-     */
-    public function network(): bool
-    {
-        return (bool) $this->get(self::PROP_NETWORK, false);
-    }
+	/**
+	 * @return string
+	 */
+	public function pluginMainFile(): string {
+		return $this->pluginMainFile;
+	}
 
-    /**
-     * @return string[]
-     */
-    public function requiresPlugins(): array
-    {
-        $value = $this->get(self::PROP_REQUIRES_PLUGINS);
+	/**
+	 * @return bool
+	 */
+	public function network(): bool {
+		return (bool) $this->get( self::PROP_NETWORK, false );
+	}
 
-        return $value && is_string($value) ? explode(',', $value) : [];
-    }
+	/**
+	 * @return string[]
+	 */
+	public function requiresPlugins(): array {
+		$value = $this->get( self::PROP_REQUIRES_PLUGINS );
 
-    /**
-     * @return bool
-     */
-    public function isActive(): bool
-    {
-        if ($this->isActive === null) {
-            if (!function_exists('is_plugin_active')) {
-                require_once ABSPATH . 'wp-admin/includes/plugin.php';
-            }
-            $this->isActive = is_plugin_active($this->pluginBaseName);
-        }
+		return $value && is_string( $value ) ? explode( ',', $value ) : array();
+	}
 
-        return $this->isActive;
-    }
+	/**
+	 * @return bool
+	 */
+	public function isActive(): bool {
+		if ( $this->isActive === null ) {
+			if ( ! function_exists( 'is_plugin_active' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+			$this->isActive = is_plugin_active( $this->pluginBaseName );
+		}
 
-    /**
-     * @return bool
-     */
-    public function isNetworkActive(): bool
-    {
-        if ($this->isNetworkActive === null) {
-            if (!function_exists('is_plugin_active_for_network')) {
-                require_once ABSPATH . 'wp-admin/includes/plugin.php';
-            }
-            $this->isNetworkActive = is_plugin_active_for_network($this->pluginBaseName);
-        }
+		return $this->isActive;
+	}
 
-        return $this->isNetworkActive;
-    }
+	/**
+	 * @return bool
+	 */
+	public function isNetworkActive(): bool {
+		if ( $this->isNetworkActive === null ) {
+			if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+			$this->isNetworkActive = is_plugin_active_for_network( $this->pluginBaseName );
+		}
 
-    /**
-     * @return bool
-     */
-    public function isMuPlugin(): bool
-    {
-        if ($this->isMu === null) {
-            $muPluginDir = wp_normalize_path(WPMU_PLUGIN_DIR);
-            $this->isMu = strpos($this->pluginMainFile, $muPluginDir) === 0;
-        }
+		return $this->isNetworkActive;
+	}
 
-        return $this->isMu;
-    }
+	/**
+	 * @return bool
+	 */
+	public function isMuPlugin(): bool {
+		if ( $this->isMu === null ) {
+			$muPluginDir = wp_normalize_path( WPMU_PLUGIN_DIR );
+			$this->isMu  = strpos( $this->pluginMainFile, $muPluginDir ) === 0;
+		}
+
+		return $this->isMu;
+	}
 }

@@ -9,289 +9,286 @@ use ThemeZee\Packable\Properties\PluginProperties;
 use ThemeZee\Packable\Properties\Properties;
 use ThemeZee\Packable\Tests\TestCase;
 
-class PluginPropertiesTest extends TestCase
-{
-    /**
-     * @test
-     */
-    public function testBasic(): void
-    {
-        $expectedDescription = 'the description';
-        $expectedAuthor = 'ThemeZee';
-        $expectedAuthorUri = 'https://themezee.com/';
-        $expectedDomainPath = 'languages/';
-        $expectedName = "Properties Test";
-        $expectedTextDomain = 'properties-test';
-        $expectedUri = 'https://github.com/themezee/packable';
-        $expectedVersion = '1.0';
-        $expectedPhpVersion = "7.4";
-        $expectedWpVersion = "5.3";
-        $expectedNetwork = random_int(1, 1000) > 500;
+class PluginPropertiesTest extends TestCase {
 
-        $expectedPluginMainFile = '/app/wp-content/plugins/plugin-dir/plugin-name.php';
-        $expectedBaseName = 'plugin-dir/plugin-name.php';
-        $expectedBasePath = '/app/wp-content/plugins/plugin-dir/';
-        $expectedSanitizedBaseName = 'plugin-dir';
+	/**
+	 * @test
+	 */
+	public function testBasic(): void {
+		$expectedDescription = 'the description';
+		$expectedAuthor      = 'ThemeZee';
+		$expectedAuthorUri   = 'https://themezee.com/';
+		$expectedDomainPath  = 'languages/';
+		$expectedName        = 'Properties Test';
+		$expectedTextDomain  = 'properties-test';
+		$expectedUri         = 'https://github.com/themezee/packable';
+		$expectedVersion     = '1.0';
+		$expectedPhpVersion  = '7.4';
+		$expectedWpVersion   = '5.3';
+		$expectedNetwork     = random_int( 1, 1000 ) > 500;
 
-        Functions\expect('get_plugin_data')
-            ->andReturn(
-                [
-                    'Name' => $expectedName,
-                    'Author' => $expectedAuthor,
-                    'AuthorURI' => $expectedAuthorUri,
-                    'Description' => $expectedDescription,
-                    'DomainPath' => $expectedDomainPath,
-                    'TextDomain' => $expectedTextDomain,
-                    'PluginURI' => $expectedUri,
-                    'Version' => $expectedVersion,
-                    'RequiresWP' => $expectedWpVersion,
-                    'RequiresPHP' => $expectedPhpVersion,
-                    'Network' => $expectedNetwork,
-                ]
-            );
+		$expectedPluginMainFile    = '/app/wp-content/plugins/plugin-dir/plugin-name.php';
+		$expectedBaseName          = 'plugin-dir/plugin-name.php';
+		$expectedBasePath          = '/app/wp-content/plugins/plugin-dir/';
+		$expectedSanitizedBaseName = 'plugin-dir';
 
-        Functions\when('plugins_url')->returnArg(1);
-        Functions\when('wp_normalize_path')->returnArg(1);
-        Functions\expect('plugin_basename')->andReturn($expectedBaseName);
-        Functions\expect('plugin_dir_path')->andReturn($expectedBasePath);
+		Functions\expect( 'get_plugin_data' )
+			->andReturn(
+				array(
+					'Name'        => $expectedName,
+					'Author'      => $expectedAuthor,
+					'AuthorURI'   => $expectedAuthorUri,
+					'Description' => $expectedDescription,
+					'DomainPath'  => $expectedDomainPath,
+					'TextDomain'  => $expectedTextDomain,
+					'PluginURI'   => $expectedUri,
+					'Version'     => $expectedVersion,
+					'RequiresWP'  => $expectedWpVersion,
+					'RequiresPHP' => $expectedPhpVersion,
+					'Network'     => $expectedNetwork,
+				)
+			);
 
-        $properties = PluginProperties::new($expectedPluginMainFile);
+		Functions\when( 'plugins_url' )->returnArg( 1 );
+		Functions\when( 'wp_normalize_path' )->returnArg( 1 );
+		Functions\expect( 'plugin_basename' )->andReturn( $expectedBaseName );
+		Functions\expect( 'plugin_dir_path' )->andReturn( $expectedBasePath );
 
-        static::assertInstanceOf(Properties::class, $properties);
-        static::assertSame($expectedDescription, $properties->description());
-        static::assertSame($expectedAuthor, $properties->author());
-        static::assertSame($expectedAuthorUri, $properties->authorUri());
-        static::assertSame($expectedDomainPath, $properties->domainPath());
-        static::assertSame($expectedName, $properties->name());
-        static::assertSame($expectedTextDomain, $properties->textDomain());
-        static::assertSame($expectedUri, $properties->uri());
-        static::assertSame($expectedVersion, $properties->version());
-        static::assertSame($expectedWpVersion, $properties->requiresWp());
-        static::assertSame($expectedPhpVersion, $properties->requiresPhp());
-        static::assertSame($expectedSanitizedBaseName, $properties->baseName());
-        // Custom to Plugins
-        static::assertSame($expectedNetwork, $properties->network());
-        static::assertSame($expectedPluginMainFile, $properties->pluginMainFile());
-    }
+		$properties = PluginProperties::new( $expectedPluginMainFile );
 
-    /**
-     * @test
-     * @runInSeparateProcess
-     * @dataProvider provideRequiresPluginsData
-     *
-     * @param string $requiresPlugins
-     * @param string[] $expected
-     */
-    public function testRequiresPlugins(string $requiresPlugins, array $expected): void
-    {
-        $pluginMainFile = '/app/wp-content/plugins/plugin-dir/plugin-name.php';
-        $expectedBaseName = 'plugin-dir/plugin-name.php';
+		static::assertInstanceOf( Properties::class, $properties );
+		static::assertSame( $expectedDescription, $properties->description() );
+		static::assertSame( $expectedAuthor, $properties->author() );
+		static::assertSame( $expectedAuthorUri, $properties->authorUri() );
+		static::assertSame( $expectedDomainPath, $properties->domainPath() );
+		static::assertSame( $expectedName, $properties->name() );
+		static::assertSame( $expectedTextDomain, $properties->textDomain() );
+		static::assertSame( $expectedUri, $properties->uri() );
+		static::assertSame( $expectedVersion, $properties->version() );
+		static::assertSame( $expectedWpVersion, $properties->requiresWp() );
+		static::assertSame( $expectedPhpVersion, $properties->requiresPhp() );
+		static::assertSame( $expectedSanitizedBaseName, $properties->baseName() );
+		// Custom to Plugins
+		static::assertSame( $expectedNetwork, $properties->network() );
+		static::assertSame( $expectedPluginMainFile, $properties->pluginMainFile() );
+	}
 
-        Functions\expect('get_plugin_data')->andReturn([
-            'RequiresPlugins' => $requiresPlugins,
-        ]);
-        Functions\when('plugins_url')->returnArg(1);
-        Functions\expect('plugin_basename')->andReturn($expectedBaseName);
-        Functions\when('plugin_dir_path')->returnArg(1);
+	/**
+	 * @test
+	 * @runInSeparateProcess
+	 * @dataProvider provideRequiresPluginsData
+	 *
+	 * @param string   $requiresPlugins
+	 * @param string[] $expected
+	 */
+	public function testRequiresPlugins( string $requiresPlugins, array $expected ): void {
+		$pluginMainFile   = '/app/wp-content/plugins/plugin-dir/plugin-name.php';
+		$expectedBaseName = 'plugin-dir/plugin-name.php';
 
-        Functions\expect('wp_normalize_path')->andReturnFirstArg();
+		Functions\expect( 'get_plugin_data' )->andReturn(
+			array(
+				'RequiresPlugins' => $requiresPlugins,
+			)
+		);
+		Functions\when( 'plugins_url' )->returnArg( 1 );
+		Functions\expect( 'plugin_basename' )->andReturn( $expectedBaseName );
+		Functions\when( 'plugin_dir_path' )->returnArg( 1 );
 
-        $properties = PluginProperties::new($pluginMainFile);
-        static::assertEquals($expected, $properties->requiresPlugins());
-    }
+		Functions\expect( 'wp_normalize_path' )->andReturnFirstArg();
 
-    /**
-     * @return \Generator
-     */
-    public static function provideRequiresPluginsData(): \Generator
-    {
-        yield from [
-            'no dependencies' => [
-                '',
-                [],
-            ],
-            'one dependency' => [
-                'dependency',
-                [
-                    'dependency',
-                ],
-            ],
-            'multiple dependencies' => [
-                'dependency1,dependency2,dependency3',
-                [
-                    'dependency1',
-                    'dependency2',
-                    'dependency3',
-                ],
-            ],
-        ];
-    }
+		$properties = PluginProperties::new( $pluginMainFile );
+		static::assertEquals( $expected, $properties->requiresPlugins() );
+	}
 
-    /**
-     * @test
-     */
-    public function testIsActive(): void
-    {
-        $pluginMainFile = '/app/wp-content/plugins/plugin-dir/plugin-name.php';
-        $expectedBaseName = 'plugin-dir/plugin-name.php';
-        $expectedBasePath = '/app/wp-content/plugins/plugin-dir/';
+	/**
+	 * @return \Generator
+	 */
+	public static function provideRequiresPluginsData(): \Generator {
+		yield from array(
+			'no dependencies'       => array(
+				'',
+				array(),
+			),
+			'one dependency'        => array(
+				'dependency',
+				array(
+					'dependency',
+				),
+			),
+			'multiple dependencies' => array(
+				'dependency1,dependency2,dependency3',
+				array(
+					'dependency1',
+					'dependency2',
+					'dependency3',
+				),
+			),
+		);
+	}
 
-        Functions\when('get_plugin_data')->justReturn([]);
-        Functions\when('plugins_url')->returnArg(1);
-        Functions\when('wp_normalize_path')->returnArg(1);
-        Functions\expect('plugin_basename')->andReturn($expectedBaseName);
-        Functions\expect('plugin_dir_path')->andReturn($expectedBasePath);
+	/**
+	 * @test
+	 */
+	public function testIsActive(): void {
+		$pluginMainFile   = '/app/wp-content/plugins/plugin-dir/plugin-name.php';
+		$expectedBaseName = 'plugin-dir/plugin-name.php';
+		$expectedBasePath = '/app/wp-content/plugins/plugin-dir/';
 
-        $properties = PluginProperties::new($pluginMainFile);
+		Functions\when( 'get_plugin_data' )->justReturn( array() );
+		Functions\when( 'plugins_url' )->returnArg( 1 );
+		Functions\when( 'wp_normalize_path' )->returnArg( 1 );
+		Functions\expect( 'plugin_basename' )->andReturn( $expectedBaseName );
+		Functions\expect( 'plugin_dir_path' )->andReturn( $expectedBasePath );
 
-        Functions\expect('is_plugin_active')
-            ->andReturnUsing(static function (string $baseName) use ($expectedBaseName): bool {
-                return $baseName === $expectedBaseName;
-            });
+		$properties = PluginProperties::new( $pluginMainFile );
 
-        static::assertTrue($properties->isActive());
-    }
+		Functions\expect( 'is_plugin_active' )
+			->andReturnUsing(
+				static function ( string $baseName ) use ( $expectedBaseName ): bool {
+					return $baseName === $expectedBaseName;
+				}
+			);
 
-    /**
-     * @test
-     */
-    public function testIsNetworkActive(): void
-    {
-        $pluginMainFile = '/app/wp-content/plugins/plugin-dir/plugin-name.php';
-        $expectedBaseName = 'plugin-dir/plugin-name.php';
-        $expectedBasePath = '/app/wp-content/plugins/plugin-dir/';
+		static::assertTrue( $properties->isActive() );
+	}
 
-        Functions\expect('get_plugin_data')->andReturn([]);
-        Functions\when('plugins_url')->returnArg(1);
-        Functions\when('wp_normalize_path')->returnArg(1);
-        Functions\expect('plugin_basename')->andReturn($expectedBaseName);
-        Functions\expect('plugin_dir_path')->andReturn($expectedBasePath);
+	/**
+	 * @test
+	 */
+	public function testIsNetworkActive(): void {
+		$pluginMainFile   = '/app/wp-content/plugins/plugin-dir/plugin-name.php';
+		$expectedBaseName = 'plugin-dir/plugin-name.php';
+		$expectedBasePath = '/app/wp-content/plugins/plugin-dir/';
 
-        Functions\expect('is_plugin_active_for_network')
-            ->andReturnUsing(static function (string $baseName) use ($expectedBaseName): bool {
-                return $baseName === $expectedBaseName;
-            });
+		Functions\expect( 'get_plugin_data' )->andReturn( array() );
+		Functions\when( 'plugins_url' )->returnArg( 1 );
+		Functions\when( 'wp_normalize_path' )->returnArg( 1 );
+		Functions\expect( 'plugin_basename' )->andReturn( $expectedBaseName );
+		Functions\expect( 'plugin_dir_path' )->andReturn( $expectedBasePath );
 
-        $properties = PluginProperties::new($pluginMainFile);
-        static::assertTrue($properties->isNetworkActive());
-    }
+		Functions\expect( 'is_plugin_active_for_network' )
+			->andReturnUsing(
+				static function ( string $baseName ) use ( $expectedBaseName ): bool {
+					return $baseName === $expectedBaseName;
+				}
+			);
 
-    /**
-     * @test
-     * @dataProvider provideCustomHeaders
-     *
-     * @param array<string, string> $customHeaders
-     */
-    public function testCustomPluginHeaders(array $customHeaders): void
-    {
-        $pluginMainFile = '/app/wp-content/plugins/plugin-dir/plugin-name.php';
-        $expectedBaseName = 'plugin-dir/plugin-name.php';
-        $expectedBasePath = '/app/wp-content/plugins/plugin-dir/';
-        $expectedSanitizedBaseName = 'plugin-dir';
+		$properties = PluginProperties::new( $pluginMainFile );
+		static::assertTrue( $properties->isNetworkActive() );
+	}
 
-        $expectedAuthor = 'ThemeZee';
-        $expectedAuthorUri = 'https://themezee.com/';
+	/**
+	 * @test
+	 * @dataProvider provideCustomHeaders
+	 *
+	 * @param array<string, string> $customHeaders
+	 */
+	public function testCustomPluginHeaders( array $customHeaders ): void {
+		$pluginMainFile            = '/app/wp-content/plugins/plugin-dir/plugin-name.php';
+		$expectedBaseName          = 'plugin-dir/plugin-name.php';
+		$expectedBasePath          = '/app/wp-content/plugins/plugin-dir/';
+		$expectedSanitizedBaseName = 'plugin-dir';
 
-        $pluginData = array_merge(
-            [
-                'Author' => $expectedAuthor,
-                'AuthorURI' => $expectedAuthorUri,
-            ],
-            $customHeaders
-        );
+		$expectedAuthor    = 'ThemeZee';
+		$expectedAuthorUri = 'https://themezee.com/';
 
-        Functions\expect('get_plugin_data')->andReturn($pluginData);
-        Functions\when('plugins_url')->returnArg(1);
-        Functions\when('wp_normalize_path')->returnArg(1);
-        Functions\expect('plugin_basename')->andReturn($expectedBaseName);
-        Functions\expect('plugin_dir_path')->andReturn($expectedBasePath);
+		$pluginData = array_merge(
+			array(
+				'Author'    => $expectedAuthor,
+				'AuthorURI' => $expectedAuthorUri,
+			),
+			$customHeaders
+		);
 
-        $properties = PluginProperties::new($pluginMainFile);
+		Functions\expect( 'get_plugin_data' )->andReturn( $pluginData );
+		Functions\when( 'plugins_url' )->returnArg( 1 );
+		Functions\when( 'wp_normalize_path' )->returnArg( 1 );
+		Functions\expect( 'plugin_basename' )->andReturn( $expectedBaseName );
+		Functions\expect( 'plugin_dir_path' )->andReturn( $expectedBasePath );
 
-        // Check if PluginProperties do behave as normal
-        static::assertSame($expectedSanitizedBaseName, $properties->baseName());
-        static::assertSame($expectedBasePath, $properties->basePath());
+		$properties = PluginProperties::new( $pluginMainFile );
 
-        // Test default Headers
-        static::assertSame($expectedAuthor, $properties->author());
-        static::assertSame($expectedAuthor, $properties->get(Properties::PROP_AUTHOR));
-        static::assertSame($expectedAuthorUri, $properties->authorUri());
-        static::assertSame($expectedAuthorUri, $properties->get(Properties::PROP_AUTHOR_URI));
+		// Check if PluginProperties do behave as normal
+		static::assertSame( $expectedSanitizedBaseName, $properties->baseName() );
+		static::assertSame( $expectedBasePath, $properties->basePath() );
 
-        // Test headers from get_plugin_data() are removed from properties
-        // "Author" will be mapped to Properties::PROP_AUTHOR
-        static::assertFalse($properties->has('Author'));
-        static::assertFalse($properties->has('AuthorURI'));
+		// Test default Headers
+		static::assertSame( $expectedAuthor, $properties->author() );
+		static::assertSame( $expectedAuthor, $properties->get( Properties::PROP_AUTHOR ) );
+		static::assertSame( $expectedAuthorUri, $properties->authorUri() );
+		static::assertSame( $expectedAuthorUri, $properties->get( Properties::PROP_AUTHOR_URI ) );
 
-        // Test custom Headers
-        foreach ($customHeaders as $key => $value) {
-            static::assertTrue($properties->has($key));
-            static::assertSame($value, $properties->get($key));
-        }
-    }
+		// Test headers from get_plugin_data() are removed from properties
+		// "Author" will be mapped to Properties::PROP_AUTHOR
+		static::assertFalse( $properties->has( 'Author' ) );
+		static::assertFalse( $properties->has( 'AuthorURI' ) );
 
-    /**
-     * @return \Generator
-     */
-    public function provideCustomHeaders(): \Generator
-    {
-        yield 'WooCommerce Plugin Headers' => [
-            [
-                'WC requires at least' => '2.2',
-                'WC tested up to:' => '2.3',
-            ],
-        ];
+		// Test custom Headers
+		foreach ( $customHeaders as $key => $value ) {
+			static::assertTrue( $properties->has( $key ) );
+			static::assertSame( $value, $properties->get( $key ) );
+		}
+	}
 
-        yield 'Custom Plugin Headers' => [
-            [
-                'Foo' => 'bar',
-                'Baz' => 'bam',
-            ],
-        ];
-    }
+	/**
+	 * @return \Generator
+	 */
+	public function provideCustomHeaders(): \Generator {
+		yield 'WooCommerce Plugin Headers' => array(
+			array(
+				'WC requires at least' => '2.2',
+				'WC tested up to:'     => '2.3',
+			),
+		);
 
-    /**
-     * @test
-     * @runInSeparateProcess
-     * @dataProvider provideIsMuPluginData
-     *
-     * @param string $pluginMainFile
-     * @param string $muPluginDir
-     * @param bool $expected
-     */
-    public function testIsMuPlugin(string $pluginMainFile, string $muPluginDir, bool $expected): void
-    {
-        $expectedBaseName = 'the-plugin/index.php';
+		yield 'Custom Plugin Headers' => array(
+			array(
+				'Foo' => 'bar',
+				'Baz' => 'bam',
+			),
+		);
+	}
 
-        Functions\expect('get_plugin_data')->andReturn([]);
-        Functions\when('plugins_url')->returnArg(1);
-        Functions\expect('plugin_basename')->andReturn($expectedBaseName);
-        Functions\when('plugin_dir_path')->returnArg(1);
+	/**
+	 * @test
+	 * @runInSeparateProcess
+	 * @dataProvider provideIsMuPluginData
+	 *
+	 * @param string $pluginMainFile
+	 * @param string $muPluginDir
+	 * @param bool   $expected
+	 */
+	public function testIsMuPlugin( string $pluginMainFile, string $muPluginDir, bool $expected ): void {
+		$expectedBaseName = 'the-plugin/index.php';
 
-        Functions\expect('wp_normalize_path')->andReturnFirstArg();
+		Functions\expect( 'get_plugin_data' )->andReturn( array() );
+		Functions\when( 'plugins_url' )->returnArg( 1 );
+		Functions\expect( 'plugin_basename' )->andReturn( $expectedBaseName );
+		Functions\when( 'plugin_dir_path' )->returnArg( 1 );
 
-        define('WPMU_PLUGIN_DIR', $muPluginDir);
+		Functions\expect( 'wp_normalize_path' )->andReturnFirstArg();
 
-        $properties = PluginProperties::new($pluginMainFile);
-        static::assertSame($expected, $properties->isMuPlugin());
-    }
+		define( 'WPMU_PLUGIN_DIR', $muPluginDir );
 
-    /**
-     * @return \Generator
-     */
-    public static function provideIsMuPluginData(): \Generator
-    {
-        yield from [
-            'is not mu-plugin' => [
-                '/wp-content/plugins/the-plugin/index.php',
-                '/wp-content/mu-plugins/',
-                false,
-            ],
-            'is mu-plugin' => [
-                '/wp-content/mu-plugins/the-plugin/index.php',
-                '/wp-content/mu-plugins/',
-                true,
-            ],
-        ];
-    }
+		$properties = PluginProperties::new( $pluginMainFile );
+		static::assertSame( $expected, $properties->isMuPlugin() );
+	}
+
+	/**
+	 * @return \Generator
+	 */
+	public static function provideIsMuPluginData(): \Generator {
+		yield from array(
+			'is not mu-plugin' => array(
+				'/wp-content/plugins/the-plugin/index.php',
+				'/wp-content/mu-plugins/',
+				false,
+			),
+			'is mu-plugin'     => array(
+				'/wp-content/mu-plugins/the-plugin/index.php',
+				'/wp-content/mu-plugins/',
+				true,
+			),
+		);
+	}
 }

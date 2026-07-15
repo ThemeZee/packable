@@ -15,143 +15,133 @@ use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase as FrameworkTestCase;
 use Psr\Container\ContainerInterface;
 
-abstract class TestCase extends FrameworkTestCase
-{
-    use MockeryPHPUnitIntegration;
+abstract class TestCase extends FrameworkTestCase {
 
-    /**
-     * @return void
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-        Monkey\setUp();
-        Monkey\Functions\stubEscapeFunctions();
-    }
+	use MockeryPHPUnitIntegration;
 
-    /**
-     * @return void
-     */
-    protected function tearDown(): void
-    {
-        Monkey\tearDown();
-        parent::tearDown();
-    }
+	/**
+	 * @return void
+	 */
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+		Monkey\Functions\stubEscapeFunctions();
+	}
 
-    /**
-     * @param string $basename
-     * @param bool $isDebug
-     *
-     * @return Properties|MockInterface
-     */
-    protected function stubProperties(
-        string $basename = 'basename',
-        bool $isDebug = false
-    ): Properties {
+	/**
+	 * @return void
+	 */
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
 
-        $stub = \Mockery::mock(Properties::class);
-        $stub->allows('basename')->andReturn($basename);
-        $stub->allows('isDebug')->andReturn($isDebug);
+	/**
+	 * @param string $basename
+	 * @param bool   $isDebug
+	 *
+	 * @return Properties|MockInterface
+	 */
+	protected function stubProperties(
+		string $basename = 'basename',
+		bool $isDebug = false
+	): Properties {
 
-        return $stub;
-    }
+		$stub = \Mockery::mock( Properties::class );
+		$stub->allows( 'basename' )->andReturn( $basename );
+		$stub->allows( 'isDebug' )->andReturn( $isDebug );
 
-    /**
-     * @param string $id
-     * @param class-string ...$interfaces
-     *
-     * @return Module|MockInterface
-     */
-    protected function stubModule(string $id = 'module', string ...$interfaces)
-    {
-        $stub = \Mockery::mock(Module::class, ...$interfaces);
-        $stub->allows('id')->andReturn($id);
+		return $stub;
+	}
 
-        if (in_array(ServiceModule::class, $interfaces, true)) {
-            $stub->allows('services')->byDefault()->andReturn([]);
-        }
+	/**
+	 * @param string       $id
+	 * @param class-string ...$interfaces
+	 *
+	 * @return Module|MockInterface
+	 */
+	protected function stubModule( string $id = 'module', string ...$interfaces ) {
+		$stub = \Mockery::mock( Module::class, ...$interfaces );
+		$stub->allows( 'id' )->andReturn( $id );
 
-        if (in_array(ExecutableModule::class, $interfaces, true)) {
-            $stub->allows('run')->byDefault()->andReturn(false);
-        }
+		if ( in_array( ServiceModule::class, $interfaces, true ) ) {
+			$stub->allows( 'services' )->byDefault()->andReturn( array() );
+		}
 
-        return $stub;
-    }
+		if ( in_array( ExecutableModule::class, $interfaces, true ) ) {
+			$stub->allows( 'run' )->byDefault()->andReturn( false );
+		}
 
-    /**
-     * @param string $suffix
-     * @param bool $debug
-     *
-     * @return Package
-     */
-    protected function stubSimplePackage(string $suffix, bool $debug = false): Package
-    {
-        $module = $this->stubModule("module_{$suffix}", ServiceModule::class);
-        $module->expects('services')->andReturn($this->stubServices("service_{$suffix}"));
-        $properties = $this->stubProperties("package_{$suffix}", $debug);
+		return $stub;
+	}
 
-        return Package::new($properties)->addModule($module);
-    }
+	/**
+	 * @param string $suffix
+	 * @param bool   $debug
+	 *
+	 * @return Package
+	 */
+	protected function stubSimplePackage( string $suffix, bool $debug = false ): Package {
+		$module = $this->stubModule( "module_{$suffix}", ServiceModule::class );
+		$module->expects( 'services' )->andReturn( $this->stubServices( "service_{$suffix}" ) );
+		$properties = $this->stubProperties( "package_{$suffix}", $debug );
 
-    /**
-     * @param string ...$ids
-     *
-     * @return array<string, callable>
-     */
-    protected function stubServices(string ...$ids): array
-    {
-        $services = [];
-        foreach ($ids as $id) {
-            $services[$id] = static function () use ($id): \ArrayObject {
-                return new \ArrayObject(['id' => $id]);
-            };
-        }
+		return Package::new( $properties )->addModule( $module );
+	}
 
-        return $services;
-    }
+	/**
+	 * @param string ...$ids
+	 *
+	 * @return array<string, callable>
+	 */
+	protected function stubServices( string ...$ids ): array {
+		$services = array();
+		foreach ( $ids as $id ) {
+			$services[ $id ] = static function () use ( $id ): \ArrayObject {
+				return new \ArrayObject( array( 'id' => $id ) );
+			};
+		}
 
-    /**
-     * @param string ...$ids
-     *
-     * @return ContainerInterface
-     */
-    protected function stubContainer(string ...$ids): ContainerInterface
-    {
-        return new class ($this->stubServices(...$ids)) implements ContainerInterface {
-            /** @var array<string, callable> */
-            private array $services;
+		return $services;
+	}
 
-            /** @param array<string, callable> $services */
-            public function __construct(array $services)
-            {
-                $this->services = $services;
-            }
+	/**
+	 * @param string ...$ids
+	 *
+	 * @return ContainerInterface
+	 */
+	protected function stubContainer( string ...$ids ): ContainerInterface {
+		return new class($this->stubServices( ...$ids )) implements ContainerInterface {
+			/** @var array<string, callable> */
+			private array $services;
 
-            /** @return mixed */
-            public function get(string $id)
-            {
-                if (!isset($this->services[$id])) {
-                    throw new \Exception("Service {$id} not found.");
-                }
+			/** @param array<string, callable> $services */
+			public function __construct( array $services ) {
+				$this->services = $services;
+			}
 
-                return $this->services[$id]($this);
-            }
+			/** @return mixed */
+			public function get( string $id ) {
+				if ( ! isset( $this->services[ $id ] ) ) {
+					throw new \Exception( "Service {$id} not found." );
+				}
 
-            public function has(string $id): bool
-            {
-                return isset($this->services[$id]);
-            }
-        };
-    }
+				return $this->services[ $id ]( $this );
+			}
 
-    /**
-     * @param \Throwable $throwable
-     * @param string $pattern
-     *
-     * @return void
-     */
-    protected function assertThrowableMessageMatches(\Throwable $throwable, string $pattern): void
-    {
-        static::assertSame(1, preg_match("/{$pattern}/i", $throwable->getMessage()));
-    }
+			public function has( string $id ): bool {
+				return isset( $this->services[ $id ] );
+			}
+		};
+	}
+
+	/**
+	 * @param \Throwable $throwable
+	 * @param string     $pattern
+	 *
+	 * @return void
+	 */
+	protected function assertThrowableMessageMatches( \Throwable $throwable, string $pattern ): void {
+		static::assertSame( 1, preg_match( "/{$pattern}/i", $throwable->getMessage() ) );
+	}
 }

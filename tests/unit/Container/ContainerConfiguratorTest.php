@@ -8,127 +8,118 @@ use ThemeZee\Packable\Container\ContainerConfigurator;
 use ThemeZee\Packable\Tests\TestCase;
 use Psr\Container\ContainerInterface;
 
-class ContainerConfiguratorTest extends TestCase
-{
-    /**
-     * @test
-     */
-    public function testBasic(): void
-    {
-        $testee = new ContainerConfigurator();
+class ContainerConfiguratorTest extends TestCase {
 
-        static::assertInstanceOf(ContainerConfigurator::class, $testee);
-        static::assertFalse($testee->hasService('something'));
-        static::assertInstanceOf(ContainerInterface::class, $testee->createReadOnlyContainer());
-    }
+	/**
+	 * @test
+	 */
+	public function testBasic(): void {
+		$testee = new ContainerConfigurator();
 
-    /**
-     * @test
-     */
-    public function testAddHasService(): void
-    {
-        $expectedKey = 'key';
-        $expectedValue = new class {
-        };
+		static::assertInstanceOf( ContainerConfigurator::class, $testee );
+		static::assertFalse( $testee->hasService( 'something' ) );
+		static::assertInstanceOf( ContainerInterface::class, $testee->createReadOnlyContainer() );
+	}
 
-        $testee = new ContainerConfigurator();
+	/**
+	 * @test
+	 */
+	public function testAddHasService(): void {
+		$expectedKey   = 'key';
+		$expectedValue = new class() {
+		};
 
-        static::assertFalse($testee->hasService($expectedKey));
+		$testee = new ContainerConfigurator();
 
-        $testee->addService(
-            $expectedKey,
-            /** @return mixed */
-            static function () use ($expectedValue) {
-                return $expectedValue;
-            }
-        );
+		static::assertFalse( $testee->hasService( $expectedKey ) );
 
-        static::assertTrue($testee->hasService($expectedKey));
-    }
+		$testee->addService(
+			$expectedKey,
+			/** @return mixed */
+			static function () use ( $expectedValue ) {
+				return $expectedValue;
+			}
+		);
 
-    /**
-     * @test
-     */
-    public function testServiceOverride(): void
-    {
-        $expectedKey = 'key';
+		static::assertTrue( $testee->hasService( $expectedKey ) );
+	}
 
-        $testee = new ContainerConfigurator();
-        $testee->addService(
-            $expectedKey,
-            static function (): \DateTime {
-                return new \DateTime();
-            }
-        );
-        $testee->addService(
-            $expectedKey,
-            static function (): \DateTimeImmutable {
-                return new \DateTimeImmutable();
-            }
-        );
-        $container = $testee->createReadOnlyContainer();
-        $result = $container->get($expectedKey);
+	/**
+	 * @test
+	 */
+	public function testServiceOverride(): void {
+		$expectedKey = 'key';
 
-        self::assertInstanceOf(\DateTimeImmutable::class, $result);
-    }
+		$testee = new ContainerConfigurator();
+		$testee->addService(
+			$expectedKey,
+			static function (): \DateTime {
+				return new \DateTime();
+			}
+		);
+		$testee->addService(
+			$expectedKey,
+			static function (): \DateTimeImmutable {
+				return new \DateTimeImmutable();
+			}
+		);
+		$container = $testee->createReadOnlyContainer();
+		$result    = $container->get( $expectedKey );
 
-    /**
-     * @test
-     */
-    public function testHasServiceNotFound(): void
-    {
-        $testee = new ContainerConfigurator();
-        static::assertFalse($testee->hasService('unknown-service'));
-    }
+		self::assertInstanceOf( \DateTimeImmutable::class, $result );
+	}
 
-    /**
-     * @test
-     */
-    public function testHasServiceInChildContainer(): void
-    {
-        $expectedKey = 'key';
-        $childContainer = $this->stubContainer($expectedKey);
+	/**
+	 * @test
+	 */
+	public function testHasServiceNotFound(): void {
+		$testee = new ContainerConfigurator();
+		static::assertFalse( $testee->hasService( 'unknown-service' ) );
+	}
 
-        $testee = new ContainerConfigurator();
-        $testee->addContainer($childContainer);
+	/**
+	 * @test
+	 */
+	public function testHasServiceInChildContainer(): void {
+		$expectedKey    = 'key';
+		$childContainer = $this->stubContainer( $expectedKey );
 
-        static::assertTrue($testee->hasService($expectedKey));
-    }
+		$testee = new ContainerConfigurator();
+		$testee->addContainer( $childContainer );
 
-    /**
-     * @test
-     */
-    public function testCustomContainer(): void
-    {
-        $expectedId = 'expected-id';
-        $expectedValue = new \stdClass();
+		static::assertTrue( $testee->hasService( $expectedKey ) );
+	}
 
-        $childContainer = new class ($expectedId, $expectedValue) implements ContainerInterface
-        {
-            /** @var array<string, object> */
-            private array $values = [];
+	/**
+	 * @test
+	 */
+	public function testCustomContainer(): void {
+		$expectedId    = 'expected-id';
+		$expectedValue = new \stdClass();
 
-            public function __construct(string $expectedId, object $expectedValue)
-            {
-                $this->values[$expectedId] = $expectedValue;
-            }
+		$childContainer = new class($expectedId, $expectedValue) implements ContainerInterface
+		{
+			/** @var array<string, object> */
+			private array $values = array();
 
-            public function get(string $id)
-            {
-                return $this->values[$id];
-            }
+			public function __construct( string $expectedId, object $expectedValue ) {
+				$this->values[ $expectedId ] = $expectedValue;
+			}
 
-            public function has(string $id): bool
-            {
-                return isset($this->values[$id]);
-            }
-        };
+			public function get( string $id ) {
+				return $this->values[ $id ];
+			}
 
-        $testee = new ContainerConfigurator([$childContainer]);
+			public function has( string $id ): bool {
+				return isset( $this->values[ $id ] );
+			}
+		};
 
-        static::assertTrue($testee->hasService($expectedId));
+		$testee = new ContainerConfigurator( array( $childContainer ) );
 
-        $readOnlyContainer = $testee->createReadOnlyContainer();
-        static::assertSame($expectedValue, $readOnlyContainer->get($expectedId));
-    }
+		static::assertTrue( $testee->hasService( $expectedId ) );
+
+		$readOnlyContainer = $testee->createReadOnlyContainer();
+		static::assertSame( $expectedValue, $readOnlyContainer->get( $expectedId ) );
+	}
 }
