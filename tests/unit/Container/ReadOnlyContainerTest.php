@@ -9,9 +9,6 @@ use ThemeZee\Packable\Tests\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-/**
- * @phpstan-import-type Service from \ThemeZee\Packable\Module\ServiceModule
- */
 class ReadOnlyContainerTest extends TestCase
 {
     /**
@@ -154,7 +151,7 @@ class ReadOnlyContainerTest extends TestCase
     }
 
     /**
-     * @param array<string, Service> $services
+     * @param array<string, callable(ContainerInterface): mixed> $services
      * @param ContainerInterface[] $containers
      *
      * @return Container

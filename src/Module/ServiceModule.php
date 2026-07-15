@@ -6,9 +6,6 @@ namespace ThemeZee\Packable\Module;
 
 use Psr\Container\ContainerInterface;
 
-/**
- * @phpstan-type Service callable(ContainerInterface $container): mixed
- */
 interface ServiceModule extends Module
 {
     /**
@@ -19,7 +16,7 @@ interface ServiceModule extends Module
      * Services are "cached", so the given callback is called once the first time `get()` is called
      * in the container, and on subsequent `get()` the same instance is returned again and again.
      *
-     * @return array<string, Service>
+     * @return array<string, callable(ContainerInterface): mixed>
      */
     public function services(): array;
 }

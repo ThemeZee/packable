@@ -6,12 +6,9 @@ namespace ThemeZee\Packable\Container;
 
 use Psr\Container\ContainerInterface;
 
-/**
- * @phpstan-import-type Service from \ThemeZee\Packable\Module\ServiceModule
- */
 class ContainerConfigurator
 {
-    /** @var array<string, Service> */
+    /** @var array<string, callable(ContainerInterface): mixed> */
     private array $services = [];
     private ?ContainerInterface $compiledContainer = null;
     /** @var ContainerInterface[] */
@@ -36,7 +33,7 @@ class ContainerConfigurator
 
     /**
      * @param string $id
-     * @param Service $service
+     * @param callable(ContainerInterface): mixed $service
      * @return void
      */
     public function addService(string $id, callable $service): void
@@ -71,8 +68,6 @@ class ContainerConfigurator
 
     /**
      * @return ContainerInterface
-     *
-     * @phpstan-assert ContainerInterface $this->compiledContainer
      */
     public function createReadOnlyContainer(): ContainerInterface
     {

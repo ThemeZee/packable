@@ -7,12 +7,9 @@ namespace ThemeZee\Packable\Container;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-/**
- * @phpstan-import-type Service from \ThemeZee\Packable\Module\ServiceModule
- */
 class ReadOnlyContainer implements ContainerInterface
 {
-    /** @var array<string, Service> */
+    /** @var array<string, callable(ContainerInterface): mixed> */
     private array $services;
     /** @var ContainerInterface[] */
     private array $containers;
@@ -20,7 +17,7 @@ class ReadOnlyContainer implements ContainerInterface
     private array $resolvedServices = [];
 
     /**
-     * @param array<string, Service> $services
+     * @param array<string, callable(ContainerInterface): mixed> $services
      * @param ContainerInterface[] $containers
      */
     public function __construct(

@@ -11,9 +11,6 @@ use ThemeZee\Packable\Module\ServiceModule;
 use ThemeZee\Packable\Properties\Properties;
 use Psr\Container\ContainerInterface;
 
-/**
- * @phpstan-import-type Service from \ThemeZee\Packable\Module\ServiceModule
- */
 class Package
 {
     /**
@@ -335,7 +332,7 @@ class Package
      */
     private function addModuleServices(Module $module): bool
     {
-        /** @var null|array<string, Service> $services */
+        /** @var null|array<string, callable(ContainerInterface): mixed> $services */
         $services = $module instanceof ServiceModule ? $module->services() : null;
 
         if (($services === null) || ($services === [])) {
