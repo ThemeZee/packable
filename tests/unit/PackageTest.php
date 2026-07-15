@@ -314,15 +314,6 @@ class PackageTest extends TestCase
 
         $log = [];
 
-        Monkey\Actions\expectDone($package->hookName(Package::ACTION_PACKAGE_CONNECTED))
-            ->once()
-            ->whenHappen(
-                static function (string $packageName, int $status) use (&$log): void {
-                    static::assertSame($status, Package::STATUS_IDLE);
-                    $log[] = 0;
-                }
-            );
-
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_INIT))
             ->once()
             ->whenHappen(
@@ -360,11 +351,9 @@ class PackageTest extends TestCase
                 }
             );
 
-        $package->connect(Package::new($this->stubProperties('connected', true)));
         $package->boot();
 
-        static::assertSame(range(0, 4), $log);
-        static::assertCount(1, $package->connectedPackages());
+        static::assertSame(range(1, 4), $log);
     }
 
     /**
@@ -379,15 +368,6 @@ class PackageTest extends TestCase
 
         $log = [];
 
-        Monkey\Actions\expectDone($package->hookName(Package::ACTION_PACKAGE_CONNECTED))
-            ->once()
-            ->whenHappen(
-                static function (string $packageName, int $status) use (&$log): void {
-                    static::assertSame($status, Package::STATUS_IDLE);
-                    $log[] = 0;
-                }
-            );
-
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_INIT))
             ->once()
             ->whenHappen(
@@ -425,11 +405,9 @@ class PackageTest extends TestCase
                 }
             );
 
-        $package->connect(Package::new($this->stubProperties('connected', true)));
         $package->build()->boot();
 
-        static::assertSame(range(0, 4), $log);
-        static::assertCount(1, $package->connectedPackages());
+        static::assertSame(range(1, 4), $log);
     }
 
     /**
@@ -443,15 +421,6 @@ class PackageTest extends TestCase
         $package = $this->stubSimplePackage('1');
 
         $log = [];
-
-        Monkey\Actions\expectDone($package->hookName(Package::ACTION_PACKAGE_CONNECTED))
-            ->once()
-            ->whenHappen(
-                static function (string $packageName, int $status) use (&$log): void {
-                    static::assertSame($status, Package::STATUS_IDLE);
-                    $log[] = 0;
-                }
-            );
 
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_INIT))
             ->once()
@@ -484,11 +453,9 @@ class PackageTest extends TestCase
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_BOOTED))
             ->never();
 
-        $package->connect(Package::new($this->stubProperties('connected', true)));
         $package->build();
 
-        static::assertSame(range(0, 3), $log);
-        static::assertCount(1, $package->connectedPackages());
+        static::assertSame(range(1, 3), $log);
     }
 
     /**
@@ -765,270 +732,6 @@ class PackageTest extends TestCase
     }
 
     /**
-     * Test we can connect services across packages.
-     *
-     * @test
-     */
-    public function testConnectIdlePackageFromIdlePackage(): void
-    {
-        $package1 = $this->stubSimplePackage('1');
-        $package2 = $this->stubSimplePackage('2');
-
-        Monkey\Actions\expectDone($package2->hookName(Package::ACTION_PACKAGE_CONNECTED))
-            ->once()
-            ->with($package1->name(), Package::STATUS_IDLE, true);
-
-        $connected = $package2->connect($package1);
-
-        static::assertTrue($connected);
-        static::assertTrue($package2->isPackageConnected($package1->name()));
-
-        $package1->build();
-        $package2->build();
-
-        // Retrieve a Package 1's service from Package 2's container.
-        static::assertInstanceOf(\ArrayObject::class, $package2->container()->get('service_1'));
-    }
-
-    /**
-     * Test we can connect services across packages.
-     *
-     * @test
-     */
-    public function testConnectBuiltPackageFromIdlePackage(): void
-    {
-        $package1 = $this->stubSimplePackage('1');
-        $package2 = $this->stubSimplePackage('2');
-
-        Monkey\Actions\expectDone($package2->hookName(Package::ACTION_PACKAGE_CONNECTED))
-            ->once()
-            ->with($package1->name(), Package::STATUS_IDLE, false);
-
-        $package1->build();
-
-        $connected = $package2->connect($package1);
-
-        static::assertTrue($connected);
-        static::assertTrue($package2->isPackageConnected($package1->name()));
-
-        $package2->build();
-
-        // Retrieve a Package 1's service from Package 2's container.
-        static::assertInstanceOf(\ArrayObject::class, $package2->container()->get('service_1'));
-    }
-
-    /**
-     * @test
-     */
-    public function testConnectBootedPackageFromIdlePackage(): void
-    {
-        $package1 = $this->stubSimplePackage('1');
-        $package2 = $this->stubSimplePackage('2');
-
-        Monkey\Actions\expectDone($package2->hookName(Package::ACTION_PACKAGE_CONNECTED))
-            ->once()
-            ->with($package1->name(), Package::STATUS_IDLE, false);
-
-        $package1->boot();
-
-        $connected = $package2->connect($package1);
-
-        static::assertTrue($connected);
-        static::assertTrue($package2->isPackageConnected($package1->name()));
-
-        $package2->build();
-
-        // Retrieve a Package 1's service from Package 2's container.
-        static::assertInstanceOf(\ArrayObject::class, $package2->container()->get('service_1'));
-    }
-
-    /**
-     * @test
-     */
-    public function testConnectBuiltPackageFromBuildPackageFailsDebugOff(): void
-    {
-        $package1 = $this->stubSimplePackage('1');
-        $package2 = $this->stubSimplePackage('2');
-
-        \Mockery::mock('alias:' . \WP_Error::class);
-
-        Monkey\Actions\expectDone($package2->hookName(Package::ACTION_FAILED_CONNECT))
-            ->once()
-            ->with($package1->name(), \Mockery::type(\WP_Error::class));
-
-        $package1->build();
-        $package2->build();
-
-        static::assertFalse($package2->connect($package1));
-    }
-
-    /**
-     * @test
-     */
-    public function testConnectBuiltPackageFromBuildPackageFailsDebugOn(): void
-    {
-        $package1 = $this->stubSimplePackage('1');
-        $package2 = $this->stubSimplePackage('2', true);
-
-        \Mockery::mock('alias:' . \WP_Error::class);
-
-        Monkey\Actions\expectDone($package2->hookName(Package::ACTION_FAILED_CONNECT))
-            ->once()
-            ->with($package1->name(), \Mockery::type(\WP_Error::class));
-
-        $package1->build();
-        $package2->build();
-
-        $this->expectExceptionMessageMatches('/built container/i');
-        $package2->connect($package1);
-    }
-
-    /**
-     * @test
-     */
-    public function testConnectBuiltPackageFromBootedPackageFailsDebugOff(): void
-    {
-        $package1 = $this->stubSimplePackage('1');
-        $package2 = $this->stubSimplePackage('2');
-
-        \Mockery::mock('alias:' . \WP_Error::class);
-
-        Monkey\Actions\expectDone($package2->hookName(Package::ACTION_FAILED_CONNECT))
-            ->once()
-            ->with($package1->name(), \Mockery::type(\WP_Error::class));
-
-        $package1->build();
-        $package2->boot();
-
-        static::assertFalse($package2->connect($package1));
-    }
-
-    /**
-     * @test
-     */
-    public function testConnectBuiltPackageFromBootedPackageFailsDebugOn(): void
-    {
-        $package1 = $this->stubSimplePackage('1');
-        $package2 = $this->stubSimplePackage('2', true);
-
-        \Mockery::mock('alias:' . \WP_Error::class);
-
-        Monkey\Actions\expectDone($package2->hookName(Package::ACTION_FAILED_CONNECT))
-            ->once()
-            ->with($package1->name(), \Mockery::type(\WP_Error::class));
-
-        $package1->build();
-        $package2->boot();
-
-        $this->expectExceptionMessageMatches('/built container/i');
-        $package2->connect($package1);
-    }
-
-    /**
-     * @test
-     */
-    public function testAccessingServicesFromIdleConnectedPackageFails(): void
-    {
-        $package1 = $this->stubSimplePackage('1');
-        $package2 = $this->stubSimplePackage('2');
-
-        $connected = $package2->connect($package1);
-
-        $package2->build();
-
-        static::assertTrue($connected);
-        static::assertTrue($package2->isPackageConnected($package1->name()));
-
-        // We got a "not found" exception because `PackageProxyContainer::has()` return false,
-        // because $package1 is not built
-        $this->expectExceptionMessageMatches('/service_1.+not found/i');
-        $package2->container()->get('service_1');
-    }
-
-    /**
-     * @test
-     */
-    public function testPackageCanOnlyBeConnectedOnce(): void
-    {
-        $package1 = $this->stubSimplePackage('1', false);
-        $package2 = $this->stubSimplePackage('2', true);
-
-        Monkey\Actions\expectDone($package2->hookName(Package::ACTION_PACKAGE_CONNECTED))
-            ->once();
-
-        Monkey\Actions\expectDone($package2->hookName(Package::ACTION_FAILED_CONNECT))
-            ->twice()
-            ->with($package1->name(), \Mockery::type(\WP_Error::class));
-
-        Monkey\Actions\expectDone($package2->hookName(Package::ACTION_FAILED_BUILD))
-            ->never();
-
-        static::assertTrue($package2->connect($package1));
-        static::assertTrue($package2->isPackageConnected($package1->name()));
-
-        static::assertFalse($package2->connect($package1));
-        static::assertTrue($package2->isPackageConnected($package1->name()));
-
-        static::assertFalse($package2->connect($package1));
-        static::assertTrue($package2->isPackageConnected($package1->name()));
-
-        $package1->build();
-        $package2->build();
-        static::assertSame('service_1', $package2->container()->get('service_1')['id']);
-    }
-
-    /**
-     * @test
-     */
-    public function testPackageCanNotBeConnectedWithThemselves(): void
-    {
-        $package1 = $this->stubSimplePackage('1');
-
-        $action = $package1->hookName(Package::ACTION_FAILED_CONNECT);
-        Monkey\Actions\expectDone($action)->never();
-
-        static::assertFalse($package1->connect($package1));
-    }
-
-    /**
-     * @test
-     */
-    public function testGettingServicesFromBuiltConnectedPackage(): void
-    {
-        $package1 = $this->stubSimplePackage('1');
-        $package2 = $this->stubSimplePackage('2');
-        $package3 = $this->stubSimplePackage('3');
-
-        $connected2 = $package1->connect($package2);
-        $connected3 = $package1->connect($package3);
-
-        // Note only P2 is "booted", while P1 and P3 are "built".
-        $package1->build();
-        $package2->boot();
-        $package3->build();
-
-        // Test connection was successful
-        static::assertTrue($connected2);
-        static::assertTrue($connected3);
-        static::assertTrue($package1->isPackageConnected($package2->name()));
-        static::assertTrue($package1->isPackageConnected($package3->name()));
-
-        // We can get containers of all three packages
-        $container1 = $package1->container();
-        $container2 = $package2->container();
-        $container3 = $package3->container();
-
-        // And we can get services from all three containers if called directly
-        static::assertSame('service_1', $container1->get('service_1')['id']);
-        static::assertSame('service_2', $container2->get('service_2')['id']);
-        static::assertSame('service_3', $container3->get('service_3')['id']);
-
-        // And we can use Package 1 to get a service from the two connected packages
-        static::assertSame('service_2', $package1->container()->get('service_2')['id']);
-        static::assertSame('service_3', $package1->container()->get('service_3')['id']);
-    }
-
-    /**
      * When an exception happen inside `Package::boot()` and debug is off, we expect the exception
      * to be caught, an "boot failed" action to be failed, and the Package to be in errored status.
      *
@@ -1154,9 +857,6 @@ class PackageTest extends TestCase
         $module2->expects('services')->never();
 
         $package = Package::new($this->stubProperties());
-
-        $connected = Package::new($this->stubProperties());
-        $connected->boot();
 
         Monkey\Actions\expectDone($package->hookName(Package::ACTION_FAILED_ADD_MODULE))
             ->once()

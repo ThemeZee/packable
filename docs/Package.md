@@ -6,11 +6,11 @@
 
 ## "Build" and "Boot" procedures
 
-The `Package` class is responsible for "bootstrapping" the application and, by emitting hooks, enable external code to register services, as well as "connecting" other `Package` instances sharing the containers.
+The `Package` class is responsible for "bootstrapping" the application and, by emitting hooks, enable external code to register services.
 
 That happens in two separate phases, the "build" and "boot" phase.
 
-In the **"build" phase**, initialized by calling **`Package::build()`**, the class emits an hook that allow external code to add modules or connect other packages. After that, the package container is "locked" and no more services can be added.
+In the **"build" phase**, initialized by calling **`Package::build()`**, the class emits an hook that allow external code to add modules. After that, the package container is "locked" and no more services can be added.
 
 In the **"boot" phase**, initialized by calling **`Package::boot()`**, any "executable" module that was added in the "build" phase is now executed.
 
@@ -20,11 +20,11 @@ More info about the two phases can be found in the ["Application flow" chapter](
 
 ## Action hooks
 
-It has been mentioned how during both the "build" and "boot" phases the `Package` instance emits hooks that allow external code to interact with it, e. g. by extending or connecting it.
+It has been mentioned how during both the "build" and "boot" phases the `Package` instance emits hooks that allow external code to interact with it, e. g. by adding modules to it.
 
 There are three package-specific hooks:
 
-- `Package::ACTION_INITIALIZING`, fired at the beginning of the "build" phase, enables adding modules or connecting packages to the passed `Package` instance.
+- `Package::ACTION_INITIALIZING`, fired at the beginning of the "build" phase, enables adding modules to the passed `Package` instance.
 - `Package::ACTION_INITIALIZED`, fired at the end of the "build" phase, enables external code to access `Package`'s container, resolving services. No modification to the `Package`'s services are possible at this time or later.
 - `Package::ACTION_BOOTED`, fired at the end of the "boot" phase, enables external code to access `Package`'s instance at a stage where it did all its job by registering services and adding hook to WordPress.
 
@@ -56,7 +56,7 @@ add_action(
     Package::ACTION_PACKABLE_INIT,
     function (string $packageName, Package $package): void {
         if (str_starts_with($packageName, 'acme-')) {
-            $package->connect(\Acme\someGlobalLibrary())
+            $package->addModule(new \Acme\SharedModule());
         }
     }
 );
@@ -154,66 +154,6 @@ This approach makes sense when we expect multiple external plugins/libraries/the
 
 
 
-## Connecting packages
-
-Every `Package` has a separate container, however it might be desirable access another package's services. For example, from a plugin access a library's services, or from a theme access a plugin's services.
-
-That can be done using the `Package::connect()` method. Here's an example:
-
-```php
-// Theme functions.php
-use ThemeZee\Packable\{Package, Properties};
-
-$theme = Package::new(Properties\ThemeProperties::new(__DIR__));
-$theme->connect(\Acme\plugin());
-$theme->boot();
-```
-
-To note:
-
-- `Package::connect()` must be called **before** the package enters the "initialized" status, that is, before calling `Package::boot()` or `Package::build()`. If called later, no connections happen and it returns `false`
-- The package to be connected might be already booted or not. In the second case the connection will happen, but before accessing its services it has to be at least built, or an exception will happen.
-
-Package connection enables the creation of reusable libraries to be consumed by multiple plugins. For example, it might be possible to have a *library* that has something like this:
-
-```php
-namespace Acme;
-
-use ThemeZee\Packable\{Package, Properties};
-
-function myLibrary(): Package {
-    static $lib;
-    if (!$lib) {
-        $properties = Properties\LibraryProperties::new('path/to/composer.json');
-        Package::new($properties)
-            ->addModule(new ModuleOne())
-            ->addModule(new ModuleTwo())
-            ->boot();
-    }
-    return $lib;
-}
-```
-
-This function might be autoloaded via Composer, autoload, but not being a plugin, it will not be executed by WordPress.
-
-However, multiple plugins in the same installation could do:
-
-```php
-$plugin->connect(\Acme\myLibrary());
-```
-
-Thanks to that, all plugins will be able to access the library's services in the same way they access own modules' services.
-
-Please note that by calling `Package::boot()` in the `myLibrary()` function immediately after having instantiated the `Package` instance will prevent any external code to extend the library, adding more modules or connecting other packages.
-
-
-
-### Accessing connected packages' properties
-
-In modules, we can access package properties calling `$container->get(Package::PROPERTIES)`. If we'd like to access any connected package properties, we could do that using a key whose format is: `sprintf('%s.%s', $connectedPackage->name(), Package::PROPERTIES)`.
-
-
-
 ## `Package` public API
 
 
@@ -228,20 +168,6 @@ Executes the "boot" phase, and the "build" phase, if it has not be executed sepa
 ### `Package::build(): static`
 
 Executes the "build" phase. The inner container is safely accessible after that, and no more services can be added to it.
-
-
-
-### `Package::connect(Package $package): bool`
-
-Connect the given package sharing their services with the calling `Package` instance.
-
-
-
-
-### `Package::connectedPackages(): array`
-
-Returns an array of names of packages connected via `Package::connect()`.
-
 
 
 
@@ -275,13 +201,6 @@ For the list of available statuses see `Package::statusIs()` below.
 ### `Package::hookName(string $suffix = ''): string`
 
 Generates the hook name for package-specific hooks.
-
-
-
-
-### `Package::isPackageConnected(string $packageName): bool`
-
-Returns `true` when give a name of a package previously connected via `Package::connect()`.
 
 
 

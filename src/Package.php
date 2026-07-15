@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ThemeZee\Packable;
 
 use ThemeZee\Packable\Container\ContainerConfigurator;
-use ThemeZee\Packable\Container\PackageProxyContainer;
 use ThemeZee\Packable\Module\ExecutableModule;
 use ThemeZee\Packable\Module\Module;
 use ThemeZee\Packable\Module\ServiceModule;
@@ -38,7 +37,7 @@ class Package
     public const PROPERTIES = 'properties';
 
     /**
-     * Custom action to be used to add modules and connect other packages.
+     * Custom action to be used to add modules.
      * It might also be used to access package properties.
      * Access container is not possible at this stage.
      *
@@ -96,16 +95,6 @@ class Package
      * Action fired when adding a module failed.
      */
     public const ACTION_FAILED_ADD_MODULE = 'failed-add-module';
-
-    /**
-     * Action fired when a package connection failed.
-     */
-    public const ACTION_FAILED_CONNECT = 'failed-connection';
-
-    /**
-     * Action fired when a package is connected successfully.
-     */
-    public const ACTION_PACKAGE_CONNECTED = 'package-connected';
 
     /**
      * Module states can be used to get information about your module.
@@ -175,8 +164,6 @@ class Package
     private int $status = self::STATUS_IDLE;
     /** @var array<string, list<string>> */
     private array $moduleStatus = [self::MODULES_ALL => []];
-    /** @var array<string, bool> */
-    private array $connectedPackages = [];
     /** @var list<ExecutableModule> */
     private array $executables = [];
     private Properties $properties;
@@ -244,72 +231,6 @@ class Package
     }
 
     /**
-     * @param Package $package
-     * @return bool
-     */
-    public function connect(Package $package): bool
-    {
-        try {
-            if ($package === $this) {
-                return false;
-            }
-
-            $packageName = $package->name();
-
-            // Don't connect, if already connected
-            if (array_key_exists($packageName, $this->connectedPackages)) {
-                return $this->handleConnectionFailure($packageName, 'already connected', false);
-            }
-
-            // Don't connect, if already booted or boot failed
-            $failed = $this->hasFailed();
-            if ($failed || $this->hasReachedStatus(self::STATUS_INITIALIZED)) {
-                $reason = $failed ? 'is errored' : 'has a built container already';
-                $this->handleConnectionFailure($packageName, "current package {$reason}", true);
-            }
-
-            $this->connectedPackages[$packageName] = true;
-
-            // We put connected package's properties in this package's container, so that in modules
-            // "run" method we can access them if we need to.
-            $this->containerConfigurator->addService(
-                sprintf('%s.%s', $package->name(), self::PROPERTIES),
-                static function () use ($package): Properties {
-                    return $package->properties();
-                }
-            );
-
-            // If we can obtain a container we do, otherwise we build a proxy container
-            $packageHasContainer = $package->hasReachedStatus(self::STATUS_INITIALIZED)
-                || $package->hasContainer();
-            $container = $packageHasContainer
-                ? $package->container()
-                : new PackageProxyContainer($package);
-
-            $this->containerConfigurator->addContainer($container);
-
-            do_action(
-                $this->hookName(self::ACTION_PACKAGE_CONNECTED),
-                $packageName,
-                $this->status,
-                $container instanceof PackageProxyContainer
-            );
-
-            return true;
-        } catch (\Throwable $throwable) {
-            if (
-                isset($packageName)
-                && (($this->connectedPackages[$packageName] ?? false) !== true)
-            ) {
-                $this->connectedPackages[$packageName] = false;
-            }
-            $this->handleFailure($throwable, self::ACTION_FAILED_BUILD);
-
-            return false;
-        }
-    }
-
-    /**
      * @return static
      */
     public function build(): Package
@@ -323,14 +244,14 @@ class Package
                 return $this;
             }
 
-            // We expect `build` to be called only after `addModule()` or `connect()` which do
-            // not change the status, so we expect status to be still "IDLE".
+            // We expect `build` to be called only after `addModule()` which does not change the
+            // status, so we expect status to be still "IDLE".
             // This will prevent invalid things like calling `build()` from inside something
             // hooking ACTION_INIT OR ACTION_INITIALIZED.
             $this->assertStatus(self::STATUS_IDLE, 'build package');
 
             // This will change the status to "INITIALIZING" then fire the action that allow other
-            // packages to add modules or connect packages.
+            // code to add modules.
             $this->progress(self::STATUS_INITIALIZING);
 
             // This will change the status to "INITIALIZED" then fire an action when it is safe to
@@ -385,7 +306,7 @@ class Package
         // This is a status that proves that everything went well, not only the Package itself,
         // but also anything hooking Package's hooks.
         // The only way to move out of this status is a failure that might only happen directly
-        // calling `addModule()`, `connect()` or `build()`.
+        // calling `addModule()` or `build()`.
         $this->progress(self::STATUS_DONE);
 
         return true;
@@ -397,7 +318,7 @@ class Package
     private function doBuild(): void
     {
         // We expect `boot()` to be called either:
-        //   1. Directly after `addModule()`/`connect()`, without any `build()` call in between, so
+        //   1. Directly after `addModule()`, without any `build()` call in between, so
         //     status is IDLE and `$this->built` is `false`. In that case we call `build()` here.
         //   2. After `build()` was already called, so status is INITIALIZED and `$this->built` is
         //     `true`. In that case there is nothing left to do.
@@ -479,23 +400,6 @@ class Package
     public function modulesStatus(): array
     {
         return $this->moduleStatus;
-    }
-
-    /**
-     * @return array<string, bool>
-     */
-    public function connectedPackages(): array
-    {
-        return $this->connectedPackages;
-    }
-
-    /**
-     * @param string $packageName
-     * @return bool
-     */
-    public function isPackageConnected(string $packageName): bool
-    {
-        return $this->connectedPackages[$packageName] ?? false;
     }
 
     /**
@@ -625,34 +529,6 @@ class Package
         if ($globalHook !== null) {
             do_action($globalHook, $this->name(), $this);
         }
-    }
-
-    /**
-     * @param string $packageName
-     * @param string $reason
-     * @param bool $throw
-     * @return bool
-     */
-    private function handleConnectionFailure(string $packageName, string $reason, bool $throw): bool
-    {
-        $errorData = ['package' => $packageName, 'status' => $this->status];
-        $message = "Failed connecting package {$packageName} because {$reason}.";
-
-        do_action(
-            $this->hookName(self::ACTION_FAILED_CONNECT),
-            $packageName,
-            new \WP_Error('failed_connection', $message, $errorData)
-        );
-
-        if ($throw) {
-            throw new \Exception(
-                esc_html($message),
-                0,
-                $this->lastError // phpcs:ignore WordPress.Security.EscapeOutput
-            );
-        }
-
-        return false;
     }
 
     /**

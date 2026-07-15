@@ -2,7 +2,7 @@
 
 Packable implements its application flow in two phases:
 
-- First, the application's dependencies tree is "composed" by collecting services declared in modules, adding sub-containers, and connecting other applications.
+- First, the application's dependencies tree is "composed" by collecting services declared in modules and adding sub-containers.
 - After that, the application dependency tree is locked, and the services are "consumed" to execute their behavior.
 
 The `Package` class implements the two phases above, respectively, in the two methods:
@@ -32,7 +32,7 @@ Package::new($properties)->boot();
 
 There are at least two use cases for explicitly calling `Package::build()`:
 
-- When a plugin needs to "execute" pretty late during the WordPress loading, let's say, at `"template_redirect"`, we might to call `Package::boot()` at the latest possible time, but call `Package::build()` earlier to enable other packages to connect to it.
+- When a plugin needs to "execute" pretty late during the WordPress loading, let's say, at `"template_redirect"`, we might to call `Package::boot()` at the latest possible time, but call `Package::build()` earlier to make its services available to other code before then.
 - In unit tests, it might be desirable to access services from the container without any need to add hook via `Package::boot()`. In this specific case, the production code might only call `Package::boot()` while test might just use `Package::build()`.
 
 Both stages are implemented through a series of *steps*, and the application status progresses as the steps are complete. In the process, a few action hooks are fired to allow external code to interact with the flow.
@@ -44,10 +44,10 @@ At any point of the flow, by holding an instance of the `Package`, it is possibl
 ## The "build" phase
 
 1. Upon instantiation, the `Package` status is at **`Package::STATUS_IDLE`**
-2. Modules can be added by directly calling **`Package::addModule()`** on the instance, and other packages can be added by calling **`Package::connect()`**.
+2. Modules can be added by directly calling **`Package::addModule()`** on the instance.
 3. **`Package::build()`** is called.
 4. The `Package` status moves to **`Package::STATUS_INITIALIZING`**.
-5. The **`Package::ACTION_INIT`** action hook is fired, passing the package instance as an argument. That allows external code to add modules and connect other packages.
+5. The **`Package::ACTION_INIT`** action hook is fired, passing the package instance as an argument. That allows external code to add modules.
 6. The `Package` status moves to **`Package::STATUS_INITIALIZED`**. No more modules can be added.
 7. The **`Package::ACTION_INITIALIZED`** action hook is fired, passing the package instance as an argument. That allows external code to get services from the container.
 

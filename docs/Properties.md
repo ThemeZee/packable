@@ -52,12 +52,6 @@ A specific instance of your Properties will use the following data:
 
 
 
-### Accessing connected packages' properties 
-
-When we have packages connected via `Package::connect()`,  to access connected packages' properties, we could do that using a container key whose format is: `sprintf('%s.%s', $connectedPackage->name(), Package::PROPERTIES)`.
-
-
-
 ## PluginProperties
 
 Inside your Plugin you can use the following code to automatically generate Properties based on the [Plugins Header](https://developer.wordpress.org/reference/functions/get_plugin_data/):
