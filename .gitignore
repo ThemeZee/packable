@@ -16,3 +16,6 @@ tmp/
 
 ## DDEV
 .ddev
+
+## MacOS
+.DS_Store
